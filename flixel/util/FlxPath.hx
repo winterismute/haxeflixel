@@ -55,7 +55,7 @@ class FlxPath implements IFlxDestroyable
 	/**
 	 * The list of FlxPoints that make up the path data.
 	 */
-	public var nodes:Array<FlxPoint>;
+	public var nodes:Array<FlxPoint> = new Array<FlxPoint>();
 	
 	/**
 	 * Object which will follow this path
@@ -148,7 +148,8 @@ class FlxPath implements IFlxDestroyable
 	public function start(Object:FlxObject, Nodes:Array<FlxPoint>, Speed:Float = 100, Mode:Int = FlxPath.FORWARD, AutoRotate:Bool = false):FlxPath
 	{
 		object = Object;
-		nodes = Nodes;
+		if (Nodes != null)
+			nodes = Nodes;
 		speed = Math.abs(Speed);
 		_mode = Mode;
 		_autoRotate = AutoRotate;
@@ -165,11 +166,7 @@ class FlxPath implements IFlxDestroyable
 		}
 		
 		finished = false;
-		active = true;
-		if (nodes == null || nodes.length <= 0)
-		{
-			active = false;
-		}
+		active = hasNodes();
 		
 		//get starting node
 		if ((_mode == FlxPath.BACKWARD) || (_mode == FlxPath.LOOP_BACKWARD))
@@ -571,16 +568,16 @@ class FlxPath implements IFlxDestroyable
 	 * @return	The node that was excised.  Returns null if there were no nodes in the path.
 	 */
 	public function removeAt(Index:Int):FlxPoint
-	{
-		if (nodes.length <= 0)
+	{		
+		if (hasNodes())
 		{
-			return null;
+			if (Index >= nodes.length)
+			{
+				Index = nodes.length - 1;
+			}
+			return nodes.splice(Index, 1)[0];
 		}
-		if (Index >= nodes.length)
-		{
-			Index = nodes.length - 1;
-		}
-		return nodes.splice(Index, 1)[0];
+		return null;
 	}
 	
 	/**
@@ -590,7 +587,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function head():FlxPoint
 	{
-		if (nodes.length > 0)
+		if (hasNodes())
 		{
 			return nodes[0];
 		}
@@ -604,11 +601,16 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function tail():FlxPoint
 	{
-		if (nodes.length > 0)
+		if (hasNodes())
 		{
 			return nodes[nodes.length-1];
 		}
 		return null;
+	}
+	
+	public function hasNodes():Bool
+	{
+		return nodes != null && nodes.length > 0;
 	}
 	
 	#if !FLX_NO_DEBUG
