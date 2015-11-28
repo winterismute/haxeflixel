@@ -76,7 +76,7 @@ class FlxAssets
 	private static function getFileReferences(directory:String, subDirectories:Bool = false, ?filterExtensions:Array<String>):Array<FileReference>
 	{
 		var fileReferences:Array<FileReference> = [];
-		var resolvedPath = #if ios Context.resolvePath(directory) #else directory #end;
+		var resolvedPath = #if (ios || tvos) Context.resolvePath(directory) #else directory #end;
 		var directoryInfo = FileSystem.readDirectory(resolvedPath);
 		for (name in directoryInfo)
 		{
@@ -106,7 +106,8 @@ class FlxAssets
 #else
 	// fonts
 	public static var FONT_DEFAULT:String = "Nokia Cellphone FC Small";
-	public static var FONT_DEBUGGER:String = "Arial";
+	public static var FONT_DEBUGGER:String = "Monsterrat";
+	
 	
 	public static function drawLogo(graph:Graphics):Void
 	{
@@ -197,7 +198,7 @@ class FlxAssets
 	{
 		if (Std.is(Graphic, BitmapData))
 		{
-			return cast(Graphic, BitmapData);
+			return cast Graphic;
 		}
 		else if (Std.is(Graphic, Class))
 		{

@@ -2,6 +2,7 @@ import massive.munit.TestSuite;
 
 import flixel.animation.FlxAnimationControllerTest;
 import flixel.effects.particles.FlxEmitterTest;
+import flixel.effects.particles.FlxParticleTest;
 import flixel.FlxBasicTest;
 import flixel.FlxCameraTest;
 import flixel.FlxGTest;
@@ -14,6 +15,7 @@ import flixel.graphics.frames.FlxFramesCollectionTest;
 import flixel.graphics.frames.FlxFrameTest;
 import flixel.group.FlxGroupTest;
 import flixel.group.FlxSpriteGroupTest;
+import flixel.math.FlxAngleTest;
 import flixel.math.FlxMathTest;
 import flixel.math.FlxMatrixTest;
 import flixel.math.FlxPointTest;
@@ -22,6 +24,7 @@ import flixel.math.FlxRectTest;
 import flixel.math.FlxVectorTest;
 import flixel.system.FlxAssetsTest;
 import flixel.system.FlxSoundTest;
+import flixel.system.frontEnds.DebuggerFontEndTest;
 import flixel.system.frontEnds.SoundFrontEndTest;
 import flixel.text.FlxBitmapTextTest;
 import flixel.text.FlxTextTest;
@@ -56,6 +59,7 @@ class TestSuite extends massive.munit.TestSuite
 
 		add(flixel.animation.FlxAnimationControllerTest);
 		add(flixel.effects.particles.FlxEmitterTest);
+		add(flixel.effects.particles.FlxParticleTest);
 		add(flixel.FlxBasicTest);
 		add(flixel.FlxCameraTest);
 		add(flixel.FlxGTest);
@@ -68,6 +72,7 @@ class TestSuite extends massive.munit.TestSuite
 		add(flixel.graphics.frames.FlxFrameTest);
 		add(flixel.group.FlxGroupTest);
 		add(flixel.group.FlxSpriteGroupTest);
+		add(flixel.math.FlxAngleTest);
 		add(flixel.math.FlxMathTest);
 		add(flixel.math.FlxMatrixTest);
 		add(flixel.math.FlxPointTest);
@@ -76,6 +81,7 @@ class TestSuite extends massive.munit.TestSuite
 		add(flixel.math.FlxVectorTest);
 		add(flixel.system.FlxAssetsTest);
 		add(flixel.system.FlxSoundTest);
+		add(flixel.system.frontEnds.DebuggerFontEndTest);
 		add(flixel.system.frontEnds.SoundFrontEndTest);
 		add(flixel.text.FlxBitmapTextTest);
 		add(flixel.text.FlxTextTest);

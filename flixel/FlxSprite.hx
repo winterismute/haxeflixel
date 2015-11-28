@@ -257,12 +257,22 @@ class FlxSprite extends FlxObject
 		_matrix = null;
 		colorTransform = null;
 		blend = null;
-		frame = null;
 		
-		_frame = FlxDestroyUtil.destroy(_frame);
+		destroyInnerFrameGraphic();
 		
 		frames = null;
 		graphic = null;
+		_frame = FlxDestroyUtil.destroy(_frame);
+	}
+	
+	private inline function destroyInnerFrameGraphic():Void
+	{
+		#if FLX_RENDER_TILE
+		if (_frame != null && frame != null && frame.parent != _frame.parent)
+		{
+			_frame.parent.destroy();
+		}
+		#end
 	}
 	
 	public function clone():FlxSprite
@@ -333,7 +343,7 @@ class FlxSprite extends FlxObject
 		
 		if (Animated)
 		{
-			frames = FlxTileFrames.fromGraphic(graph, new FlxPoint(Width, Height));
+			frames = FlxTileFrames.fromGraphic(graph, FlxPoint.get(Width, Height));
 		}
 		else
 		{
@@ -393,7 +403,7 @@ class FlxSprite extends FlxObject
 		var max:Int = (brush.height > brush.width) ? brush.height : brush.width;
 		max = (AutoBuffer) ? Std.int(max * 1.5) : max;
 		
-		frames = FlxTileFrames.fromGraphic(tempGraph, new FlxPoint(max, max));
+		frames = FlxTileFrames.fromGraphic(tempGraph, FlxPoint.get(max, max));
 		
 		if (AutoBuffer)
 		{
@@ -502,6 +512,17 @@ class FlxSprite extends FlxObject
 	}
 	
 	/**
+	 * Helper method just for convinience, so you don't need to type:
+	 * sprite.frame = sprite.frame;
+	 * You may need this method in tile render mode, 
+	 * when you want sprite to use its original graphic, not the graphic generated from its framePixels
+	 */
+	public inline function resetFrame():Void
+	{
+		frame = this.frame;
+	}
+	
+	/**
 	 * Helper function to set the graphic's dimensions by using scale, allowing you to keep the current aspect ratio
 	 * should one of the Integers be <= 0. It might make sense to call updateHitbox() afterwards!
 	 * 
@@ -531,7 +552,7 @@ class FlxSprite extends FlxObject
 	
 	/**
 	 * Updates the sprite's hitbox (width, height, offset) according to the current scale. 
-	 * Also calls setOriginToCenter(). Called by setGraphicSize().
+	 * Also calls centerOrigin().
 	 */
 	public function updateHitbox():Void
 	{
@@ -814,6 +835,9 @@ class FlxSprite extends FlxObject
 	
 	private function updateColorTransform():Void
 	{
+		if (colorTransform == null)
+			colorTransform = new ColorTransform();
+		
 		if ((alpha != 1) || (color != 0xffffff))
 		{
 			colorTransform.redMultiplier = color.redFloat;
@@ -900,7 +924,19 @@ class FlxSprite extends FlxObject
 	{
 		if (_frame != null && dirty)
 		{
-			if (!flipX && !flipY && _frame.type == FlxFrameType.REGULAR)
+			#if FLX_RENDER_TILE
+			// don't try to regenerate frame pixels if _frame already uses it as source of graphics
+			// if you'll try then it will clear framePixels and you won't see anything
+			if (_frame.parent.bitmap == framePixels)
+			{
+				dirty = false;
+				return framePixels;
+			}
+			#end
+			
+			var doFlipX = flipX != _frame.flipX;
+			var doFlipY = flipY != _frame.flipY;
+			if (!doFlipX && !doFlipY && _frame.type == FlxFrameType.REGULAR)
 			{
 				framePixels = _frame.paint(framePixels, _flashPointZero, false, true);
 			}
@@ -913,6 +949,13 @@ class FlxSprite extends FlxObject
 			{
 				framePixels.colorTransform(_flashRect, colorTransform);
 			}
+			
+			#if FLX_RENDER_TILE
+			// recreate _frame for native target, so it will use modified framePixels
+			destroyInnerFrameGraphic();
+			var graph:FlxGraphic = FlxGraphic.fromBitmapData(framePixels, false, null, false);
+			_frame = graph.imageFrame.frame.copyTo(_frame);
+			#end
 			
 			dirty = false;
 		}
@@ -1130,12 +1173,23 @@ class FlxSprite extends FlxObject
 			frame = frames.frames[0];
 			dirty = true;
 		}
+		else
+		{
+			return null;
+		}
 		
-		if (frame != null && clipRect != null)
+		#if FLX_RENDER_TILE
+		if (_frame != null && _frame.parent.bitmap == framePixels)
+		{
+			_frame.parent.destroy();
+		}
+		#end
+		
+		if (clipRect != null)
 		{
 			_frame = frame.clipTo(clipRect, _frame);
 		}
-		else if (frame != null)
+		else
 		{
 			_frame = frame.copyTo(_frame);
 		}
@@ -1157,6 +1211,10 @@ class FlxSprite extends FlxObject
 	
 	private function set_alpha(Alpha:Float):Float
 	{
+		if(alpha == Alpha)
+		{
+			return Alpha;
+		}
 		alpha = FlxMath.bound(Alpha, 0, 1);
 		updateColorTransform();
 		return alpha;
