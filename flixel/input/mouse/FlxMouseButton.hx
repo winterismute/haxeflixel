@@ -9,7 +9,7 @@ import flixel.math.FlxPoint;
 
 class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 {
-	public static function getFromID(id:FlxMouseButtonID):FlxMouseButton
+	public static function getByID(id:FlxMouseButtonID):FlxMouseButton
 	{
 		return switch (id)
 		{
@@ -60,10 +60,6 @@ class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 			if (FlxG.game.debugger.hasMouse)
 			{
 				return;
-			}
-			if (FlxG.game.debugger.watch.editing)
-			{
-				FlxG.game.debugger.watch.submit();
 			}
 		}
 		#end

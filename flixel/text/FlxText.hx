@@ -22,6 +22,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.helpers.FlxRange;
 import openfl.Assets;
+import haxe.Utf8;
 using StringTools;
 
 // TODO: think about filters and text
@@ -228,7 +229,7 @@ class FlxText extends FlxSprite
 	override public function drawFrame(Force:Bool = false):Void 
 	{
 		_regen = _regen || Force;
-		super.drawFrame(Force);
+		super.drawFrame(_regen);
 	}
 	
 	/**
@@ -241,10 +242,7 @@ class FlxText extends FlxSprite
 	 */
 	public function stampOnAtlas(atlas:FlxAtlas):Bool
 	{
-		if (_regen)
-		{
-			regenGraphics();
-		}
+		regenGraphic();
 		
 		var node:FlxNode = atlas.addNode(graphic.bitmap, graphic.key);
 		var result:Bool = (node != null);
@@ -258,7 +256,7 @@ class FlxText extends FlxSprite
 	}
 	
 	/**
-	 * Applies formats to text between marker strings, then removes those markers.
+	 * Applies formats to text between marker characters, then removes those markers.
 	 * NOTE: This will clear all FlxTextFormats and return to the default format.
 	 * 
 	 * Usage: 
@@ -272,13 +270,13 @@ class FlxText extends FlxSprite
 	 *    t.applyMarkup("HEY_BUDDY_@WHAT@_$IS_$_GOING@ON$?$@", [yellow, green]);
 	 * 
 	 * @param   input   The text you want to format
-	 * @param   rules   FlxTextFormats to selectively apply, paired with marker strings such as "@" or "$"
+	 * @param   rules   FlxTextFormats to selectively apply, paired with marker characters such as "@" or "$"
 	 */
-	public function applyMarkup(input:String, rules:Array<FlxTextFormatMarkerPair>):Void
+	public function applyMarkup(input:String, rules:Array<FlxTextFormatMarkerPair>):FlxText
 	{
 		if (rules == null || rules.length == 0)
 		{
-			return;   //there's no point in running the big loop
+			return this;   //there's no point in running the big loop
 		}
 		
 		clearFormats();   //start with default formatting
@@ -295,10 +293,10 @@ class FlxText extends FlxSprite
 				var start:Bool = false;
 				if (input.indexOf(rule.marker) != -1)   //if this marker is present
 				{
-					for (charIndex in 0...input.length)   //inspect each character
+					for (charIndex in 0...Utf8.length(input))   //inspect each character
 					{
-						var char:String = input.charAt(charIndex);
-						if (char == rule.marker)   //it's one of the markers
+						var charCode = Utf8.charCodeAt(input, charIndex);
+						if (charCode == rule.marker.charCodeAt(0))   //it's one of the markers
 						{
 							if (!start)   //we're outside of a format block
 							{ 
@@ -378,6 +376,8 @@ class FlxText extends FlxSprite
 		{
 			addFormat(rulesToApply[i].format, rangeStarts[i], rangeEnds[i]);
 		}
+		
+		return this;
 	}
 	
 	/**
@@ -387,7 +387,7 @@ class FlxText extends FlxSprite
 	 * @param	Start	(Default = -1) The start index of the string where the format will be applied.
 	 * @param	End		(Default = -1) The end index of the string where the format will be applied.
 	 */
-	public function addFormat(Format:FlxTextFormat, Start:Int = -1, End:Int = -1):Void
+	public function addFormat(Format:FlxTextFormat, Start:Int = -1, End:Int = -1):FlxText
 	{
 		_formatRanges.push(new FlxTextFormatRange(Format, Start, End));
 		// sort the array using the start value of the format so we can skip formats that can't be applied to the textField
@@ -396,13 +396,15 @@ class FlxText extends FlxSprite
 			return left.range.start < right.range.start ? -1 : 1;
 		});
 		_regen = true;
+		
+		return this;
 	}
 	
 	/**
 	 * Removes a specific FlxTextFormat from this text.
 	 * If a range is specified, this only removes the format when it touches that range.
 	 */
-	public inline function removeFormat(Format:FlxTextFormat, ?Start:Int, ?End:Int):Void
+	public inline function removeFormat(Format:FlxTextFormat, ?Start:Int, ?End:Int):FlxText
 	{
 		for (formatRange in _formatRanges)
 		{
@@ -418,15 +420,19 @@ class FlxText extends FlxSprite
 			}
 		}
 		_regen = true;
+		
+		return this;
 	}
 	
 	/**
 	 * Clears all the formats applied.
 	 */
-	public function clearFormats():Void
+	public function clearFormats():FlxText
 	{
 		_formatRanges = [];
 		updateDefaultFormat();
+		
+		return this;
 	}
 	
 	/**
@@ -458,7 +464,8 @@ class FlxText extends FlxSprite
 		
 		size = Size;
 		color = Color;
-		alignment = Alignment;
+		if (Alignment != null)
+			alignment = Alignment;
 		setBorderStyle(BorderStyle, BorderColor);
 		
 		updateDefaultFormat();
@@ -474,12 +481,14 @@ class FlxText extends FlxSprite
 	 * @param	Size outline size in pixels
 	 * @param	Quality outline quality - # of iterations to use when drawing. 0:just 1, 1:equal number to BorderSize
 	 */
-	public inline function setBorderStyle(Style:FlxTextBorderStyle, Color:FlxColor = 0, Size:Float = 1, Quality:Float = 1):Void 
+	public inline function setBorderStyle(Style:FlxTextBorderStyle, Color:FlxColor = 0, Size:Float = 1, Quality:Float = 1):FlxText 
 	{
 		borderStyle = Style;
 		borderColor = Color;
 		borderSize = Size;
 		borderQuality = Quality;
+		
+		return this;
 	}
 	
 	private function set_fieldWidth(value:Float):Float
@@ -513,7 +522,7 @@ class FlxText extends FlxSprite
 	{
 		if (textField != null)
 		{
-			textField.autoSize = (value) ? TextFieldAutoSize.LEFT : TextFieldAutoSize.NONE;
+			textField.autoSize = value ? TextFieldAutoSize.LEFT : TextFieldAutoSize.NONE;
 			_regen = true;
 		}
 		
@@ -667,54 +676,39 @@ class FlxText extends FlxSprite
 	private function set_borderStyle(style:FlxTextBorderStyle):FlxTextBorderStyle
 	{		
 		if (style != borderStyle)
-		{
-			borderStyle = style;
 			_regen = true;
-		}
 		
-		return borderStyle;
+		return borderStyle = style;
 	}
 	
 	private function set_borderColor(Color:FlxColor):FlxColor
 	{
 		#if neko
 		if (Color == null)
-		{
 			Color = FlxColor.TRANSPARENT;
-		}
 		#end
+		
 		if (borderColor != Color && borderStyle != NONE)
-		{
 			_regen = true;
-		}
 		_hasBorderAlpha = Color.alphaFloat < 1;
-		borderColor = Color;
-		return Color;
+		return borderColor = Color;
 	}
 	
 	private function set_borderSize(Value:Float):Float
 	{
-		if (Value != borderSize && borderStyle != NONE)
-		{			
+		if (Value != borderSize && borderStyle != NONE)		
 			_regen = true;
-		}
-		borderSize = Value;
 		
-		return Value;
+		return borderSize = Value;
 	}
 	
 	private function set_borderQuality(Value:Float):Float
 	{
 		Value = FlxMath.bound(Value, 0, 1);
-		
 		if (Value != borderQuality && borderStyle != NONE)
-		{
 			_regen = true;
-		}
 		
-		borderQuality = Value;
-		
-		return Value;
+		return borderQuality = Value;
 	}
 	
 	override private function set_graphic(Value:FlxGraphic):FlxGraphic 
@@ -727,17 +721,13 @@ class FlxText extends FlxSprite
 	
 	override private function get_width():Float 
 	{
-		if (_regen)
-			regenGraphics();
-		
+		regenGraphic();
 		return super.get_width();
 	}
 	
 	override private function get_height():Float 
 	{
-		if (_regen)
-			regenGraphics();
-		
+		regenGraphic();
 		return super.get_height();
 	}
 	
@@ -760,7 +750,7 @@ class FlxText extends FlxSprite
 		dirty = true;
 	}
 	
-	private function regenGraphics():Void
+	private function regenGraphic():Void
 	{
 		if (textField == null || _regen == false)
 			return;
@@ -849,9 +839,7 @@ class FlxText extends FlxSprite
 	
 	override public function draw():Void 
 	{
-		if (_regen)
-			regenGraphics();
-		
+		regenGraphic();
 		super.draw();
 	}
 	
@@ -865,14 +853,13 @@ class FlxText extends FlxSprite
 		if (textField == null)
 			return;
 		
-		#if FLX_RENDER_TILE
-		if (!RunOnCpp)
-			return;
-		#end
-			
-		if (_regen)
-			regenGraphics();
+		if (FlxG.renderTile)
+		{
+			if (!RunOnCpp)
+				return;
+		}
 		
+		regenGraphic();
 		super.calcFrame(RunOnCpp);
 	}
 	

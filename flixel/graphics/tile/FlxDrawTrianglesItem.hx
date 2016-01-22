@@ -9,6 +9,7 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import openfl.display.Graphics;
 import openfl.display.TriangleCulling;
+import openfl.geom.ColorTransform;
 import openfl.Vector;
 
 typedef DrawData<T> = #if flash Vector<T> #else Array<T> #end;
@@ -52,14 +53,15 @@ class FlxDrawTrianglesItem extends FlxDrawBaseItem<FlxDrawTrianglesItem>
 	
 	override public function render(camera:FlxCamera):Void 
 	{
-		#if FLX_RENDER_TILE
+		if (!FlxG.renderTile) return;
+		
 		if (numTriangles <= 0)
 		{
 			return;
 		}
 		
 		camera.canvas.graphics.beginBitmapFill(graphics.bitmap, null, true, (camera.antialiasing || antialiasing));
-		#if flash
+		#if !openfl_legacy
 		camera.canvas.graphics.drawTriangles(vertices, indices, uvtData, TriangleCulling.NONE);
 		#else
 		camera.canvas.graphics.drawTriangles(vertices, indices, uvtData, TriangleCulling.NONE, (colored) ? colors : null, blending);
@@ -75,7 +77,6 @@ class FlxDrawTrianglesItem extends FlxDrawBaseItem<FlxDrawTrianglesItem>
 		#end
 		
 		FlxTilesheet._DRAWCALLS++;
-		#end
 	}
 	
 	override public function reset():Void 
@@ -207,8 +208,7 @@ class FlxDrawTrianglesItem extends FlxDrawBaseItem<FlxDrawTrianglesItem>
 		return bounds;
 	}
 	
-	override public function addQuad(frame:FlxFrame, matrix:FlxMatrix,
-		red:Float = 1, green:Float = 1, blue:Float = 1, alpha:Float = 1):Void
+	override public function addQuad(frame:FlxFrame, matrix:FlxMatrix, ?transform:ColorTransform):Void
 	{
 		var prevVerticesPos:Int = verticesPosition;
 		var prevIndicesPos:Int = indicesPosition;
@@ -260,8 +260,20 @@ class FlxDrawTrianglesItem extends FlxDrawBaseItem<FlxDrawTrianglesItem>
 		indices[prevIndicesPos + 4] = prevNumberOfVertices + 3;
 		indices[prevIndicesPos + 5] = prevNumberOfVertices;
 		
+		var alpha = transform != null ? transform.alphaMultiplier : 1.0;
+		
 		if (colored)
 		{
+			var red   = 1.0;
+			var green = 1.0;
+			var blue  = 1.0;
+			
+			if (transform != null) {
+				red   = transform.redMultiplier;
+				green = transform.greenMultiplier;
+				blue  = transform.blueMultiplier;
+			}
+			
 			#if neko
 			var color:FlxColor = FlxColor.fromRGBFloat(red, green, blue, 1.0);
 			#else
