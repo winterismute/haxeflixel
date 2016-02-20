@@ -25,6 +25,9 @@ import openfl.geom.Matrix;
  */
 class FlxAtlas implements IFlxDestroyable
 {	
+	private static var point:Point = new Point();
+	private static var matrix:Matrix = new Matrix();
+	
 	/**
 	 * Default minimum size for atlases.
 	 */
@@ -244,7 +247,7 @@ class FlxAtlas implements IFlxDestroyable
 		var dw:Int = nodeToDivide.width - insertWidth;
 		var dh:Int = nodeToDivide.height - insertHeight;
 		
-		return (dw > dh); // divide horizontally if true, vertically if false
+		return dw > dh; // divide horizontally if true, vertically if false
 	}
 	
 	private function divideNode(nodeToDivide:FlxNode, insertWidth:Int, insertHeight:Int, divideHorizontally:Bool, firstGrandChildData:BitmapData = null, firstGrandChildKey:String = null, firstGrandChildRotated:Bool = false):FlxNode
@@ -304,7 +307,6 @@ class FlxAtlas implements IFlxDestroyable
 				
 				if (firstGrandChildRotated)
 				{
-					var matrix:Matrix = FlxMatrix.matrix;
 					matrix.identity();
 					matrix.rotate(Math.PI / 2);
 					matrix.translate(firstGrandChildData.height + firstGrandChild.x, firstGrandChild.y);
@@ -312,7 +314,6 @@ class FlxAtlas implements IFlxDestroyable
 				}
 				else
 				{
-					var point:Point = FlxPoint.point1;
 					point.setTo(firstGrandChild.x, firstGrandChild.y);
 					_bitmapData.copyPixels(firstGrandChildData, firstGrandChildData.rect, point);
 				}
@@ -544,7 +545,6 @@ class FlxAtlas implements IFlxDestroyable
 		var newBitmapData:BitmapData = new BitmapData(root.width, root.height, true, FlxColor.TRANSPARENT);
 		if (_bitmapData != null)
 		{
-			var point:Point = FlxPoint.point1;
 			point.setTo(0, 0);
 			newBitmapData.copyPixels(_bitmapData, _bitmapData.rect, point);
 		}
@@ -704,7 +704,7 @@ class FlxAtlas implements IFlxDestroyable
 		}
 		
 		_tempStorage = new Array<TempAtlasObj>();
-		for (i in 0...(numBitmaps))
+		for (i in 0...numBitmaps)
 		{
 			_tempStorage.push({ bmd: bitmaps[i], keyStr: keys[i] });
 		}
@@ -718,7 +718,7 @@ class FlxAtlas implements IFlxDestroyable
 		objects.sort(bitmapSorter);
 		var numBitmaps:Int = objects.length;
 		
-		for (i in 0...(numBitmaps))
+		for (i in 0...numBitmaps)
 		{
 			addNode(objects[i].bmd, objects[i].keyStr);
 		}

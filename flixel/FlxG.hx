@@ -86,7 +86,7 @@ class FlxG
 	 * The HaxeFlixel version, in semantic versioning syntax. Use Std.string()
 	 * on it to get a String formatted like this: "HaxeFlixel MAJOR.MINOR.PATCH-COMMIT_SHA".
 	 */ 
-	public static var VERSION(default, null):FlxVersion = new FlxVersion(4, 0, 0);
+	public static var VERSION(default, null):FlxVersion = new FlxVersion(4, 1, 0);
 	
 	/**
 	 * Internal tracker for game object.
@@ -266,6 +266,8 @@ class FlxG
 	 */
 	public static var plugins(default, null):PluginFrontEnd;
 	
+	public static var initialWidth(default, null):Int = 0;
+	public static var initialHeight(default, null):Int = 0;
 	public static var initialZoom(default, null):Float = 0;
 	
 	#if !FLX_NO_SOUND_SYSTEM
@@ -281,11 +283,25 @@ class FlxG
 	public static var signals(default, null):SignalFrontEnd = new SignalFrontEnd();
 	
 	/**
-	 * Handy helper functions that takes care of all the things to resize the game.
+	 * Resizes the game within the window by reapplying the current scale mode.
 	 */
 	public static inline function resizeGame(Width:Int, Height:Int):Void
 	{
 		scaleMode.onMeasure(Width, Height);
+	}
+	
+	/**
+	 * Resizes the window. Only works on desktop targets (neko, windows, linux, mac).
+	 */
+	public static function resizeWindow(Width:Int, Height:Int):Void
+	{
+		#if desktop
+		#if openfl_legacy
+		stage.resize(Width, Height);
+		#else
+		Lib.application.window.resize(Width, Height);
+		#end
+		#end
 	}
 	
 	/**
@@ -499,9 +515,8 @@ class FlxG
 		
 		initRenderMethod();
 		
-		BaseScaleMode.gWidth = width;
-		BaseScaleMode.gHeight = height;
-		
+		FlxG.initialWidth = width;
+		FlxG.initialHeight = height;
 		FlxG.initialZoom = FlxCamera.defaultZoom = Zoom;
 		
 		resizeGame(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
@@ -542,32 +557,32 @@ class FlxG
 	
 	private static function initRenderMethod():Void
 	{
-		renderMethod = BLIT;
+		renderMethod = BLITTING;
 		
 		#if (!lime_legacy && !flash)
 			if (Lib.application.config.windows[0].hardware == false)
 			{
-				renderMethod = BLIT;
+				renderMethod = BLITTING;
 			}
 			else
 			{
-				renderMethod = switch(stage.window.renderer.type)
+				renderMethod = switch (stage.window.renderer.type)
 				{
-					case OPENGL, CONSOLE:      TILES;
-					case CANVAS, FLASH, CAIRO: BLIT;
-					default:                   BLIT;
+					case OPENGL, CONSOLE:      DRAW_TILES;
+					case CANVAS, FLASH, CAIRO: BLITTING;
+					default:                   BLITTING;
 				}
 			}
 		#else
 			#if (flash || js)
-				renderMethod = BLIT;
+				renderMethod = BLITTING;
 			#else
-				renderMethod = TILES;
+				renderMethod = DRAW_TILES;
 			#end
 		#end
 		
-		renderBlit = renderMethod == BLIT;
-		renderTile = renderMethod == TILES;
+		renderBlit = renderMethod == BLITTING;
+		renderTile = renderMethod == DRAW_TILES;
 		
 		FlxObject.defaultPixelPerfectPosition = renderBlit;
 	}
@@ -666,8 +681,8 @@ class FlxG
 	
 	private static function get_fullscreen():Bool
 	{
-		return (stage.displayState == StageDisplayState.FULL_SCREEN 
-			|| stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE);
+		return stage.displayState == StageDisplayState.FULL_SCREEN 
+			|| stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE;
 	}
 	
 	private static function set_fullscreen(Value:Bool):Bool
@@ -689,6 +704,6 @@ class FlxG
 
 enum FlxRenderMethod 
 {
-	TILES;
-	BLIT;
+	DRAW_TILES;
+	BLITTING;
 }

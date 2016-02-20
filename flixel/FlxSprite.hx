@@ -1,7 +1,5 @@
 package flixel;
 
-using flixel.util.FlxColorTransformUtil;
-
 import flash.display.BitmapData;
 import flash.display.BlendMode;
 import flash.geom.ColorTransform;
@@ -23,6 +21,7 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.util.FlxBitmapDataUtil;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
+using flixel.util.FlxColorTransformUtil;
 
 @:keep @:bitmap("assets/images/logo/default.png")
 private class GraphicDefault extends BitmapData {}
@@ -387,7 +386,7 @@ class FlxSprite extends FlxObject
 			brush.copyPixels(full, _flashRect, _flashPointZero);
 		}
 		
-		key = key + ":" + Rotations + ":" + AutoBuffer;
+		key += ":" + Rotations + ":" + AutoBuffer;
 		
 		//Generate a new sheet if necessary, then fix up the width and height
 		var tempGraph:FlxGraphic = FlxG.bitmap.get(key);
@@ -398,7 +397,7 @@ class FlxSprite extends FlxObject
 		}
 		
 		var max:Int = (brush.height > brush.width) ? brush.height : brush.width;
-		max = (AutoBuffer) ? Std.int(max * 1.5) : max;
+		max = AutoBuffer ? Std.int(max * 1.5) : max;
 		
 		frames = FlxTileFrames.fromGraphic(tempGraph, FlxPoint.get(max, max));
 		
@@ -553,7 +552,7 @@ class FlxSprite extends FlxObject
 	{
 		width = Math.abs(scale.x) * frameWidth;
 		height = Math.abs(scale.y) * frameHeight;
-		offset.set( -0.5 * (width - frameWidth), -0.5 * (height - frameHeight));
+		offset.set(-0.5 * (width - frameWidth), -0.5 * (height - frameHeight));
 		centerOrigin();
 	}
 	
@@ -578,7 +577,7 @@ class FlxSprite extends FlxObject
 		if (FlxG.renderBlit)
 		{
 			dirty = true;
-			getFlxFrameBitmapData();
+			updateFramePixels();
 		}
 	}
 	
@@ -602,65 +601,25 @@ class FlxSprite extends FlxObject
 	override public function draw():Void
 	{
 		if (_frame == null)
-		{
 			loadGraphic(FlxGraphic.fromClass(GraphicDefault));
-		}
 		
 		if (alpha == 0 || _frame.type == FlxFrameType.EMPTY)
-		{
 			return;
-		}
 		
-		if (dirty)	//rarely 
-		{
+		if (dirty) //rarely 
 			calcFrame(useFramePixels);
-		}
 		
 		for (camera in cameras)
 		{
 			if (!camera.visible || !camera.exists || !isOnScreen(camera))
-			{
 				continue;
-			}
 			
 			getScreenPosition(_point, camera).subtractPoint(offset);
 			
-			var simple:Bool = isSimpleRender(camera);
-			if (simple)
-			{
-				if (isPixelPerfectRender(camera))
-				{
-					_point.floor();
-				}
-				
-				_point.copyToFlash(_flashPoint);
-				camera.copyPixels(_frame, framePixels, _flashRect, _flashPoint, colorTransform, blend, antialiasing);
-			}
+			if (isSimpleRender(camera))
+				drawSimple(camera);
 			else
-			{
-				_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
-				_matrix.translate( -origin.x, -origin.y);
-				_matrix.scale(scale.x, scale.y);
-				
-				if (bakedRotationAngle <= 0)
-				{
-					updateTrig();
-					
-					if (angle != 0)
-					{
-						_matrix.rotateWithTrig(_cosAngle, _sinAngle);
-					}
-				}
-				
-				_point.add(origin.x, origin.y);
-				if (isPixelPerfectRender(camera))
-				{
-					_point.floor();
-				}
-				
-				_matrix.translate(_point.x, _point.y);
-				camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing);
-			}
+				drawComplex(camera);
 			
 			#if !FLX_NO_DEBUG
 			FlxBasic.visibleCount++;
@@ -669,10 +628,40 @@ class FlxSprite extends FlxObject
 		
 		#if !FLX_NO_DEBUG
 		if (FlxG.debugger.drawDebug)
-		{
 			drawDebug();
-		}
 		#end
+	}
+	
+	private function drawSimple(camera:FlxCamera):Void
+	{
+		if (isPixelPerfectRender(camera))
+			_point.floor();
+		
+		_point.copyToFlash(_flashPoint);
+		camera.copyPixels(_frame, framePixels, _flashRect,
+			_flashPoint, colorTransform, blend, antialiasing);
+	}
+	
+	private function drawComplex(camera:FlxCamera):Void
+	{
+		_frame.prepareMatrix(_matrix, FlxFrameAngle.ANGLE_0, checkFlipX(), checkFlipY());
+		_matrix.translate(-origin.x, -origin.y);
+		_matrix.scale(scale.x, scale.y);
+		
+		if (bakedRotationAngle <= 0)
+		{
+			updateTrig();
+			
+			if (angle != 0)
+				_matrix.rotateWithTrig(_cosAngle, _sinAngle);
+		}
+		
+		_point.add(origin.x, origin.y);
+		if (isPixelPerfectRender(camera))
+			_point.floor();
+		
+		_matrix.translate(_point.x, _point.y);
+		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing);
 	}
 	
 	/**
@@ -687,10 +676,8 @@ class FlxSprite extends FlxObject
 	{
 		Brush.drawFrame();
 		
-		if (this.graphic == null || Brush.graphic == null)
-		{
+		if (graphic == null || Brush.graphic == null)
 			throw "Cannot stamp to or from a FlxSprite with no graphics.";
-		}
 		
 		var bitmapData:BitmapData = Brush.framePixels;
 		
@@ -703,11 +690,6 @@ class FlxSprite extends FlxObject
 			graphic.bitmap.copyPixels(bitmapData, _flashRect2, _flashPoint, null, null, true);
 			_flashRect2.width = graphic.bitmap.width;
 			_flashRect2.height = graphic.bitmap.height;
-			if (FlxG.renderBlit)
-			{
-				dirty = true;
-				calcFrame();
-			}
 		}
 		else // complex render
 		{
@@ -721,11 +703,12 @@ class FlxSprite extends FlxObject
 			_matrix.translate(X + frame.frame.x + Brush.origin.x, Y + frame.frame.y + Brush.origin.y);
 			var brushBlend:BlendMode = Brush.blend;
 			graphic.bitmap.draw(bitmapData, _matrix, null, brushBlend, null, Brush.antialiasing);
-			if (FlxG.renderBlit)
-			{
-				dirty = true;
-				calcFrame();
-			}
+		}
+		
+		if (FlxG.renderBlit)
+		{
+			dirty = true;
+			calcFrame();
 		}
 	}
 	
@@ -798,7 +781,7 @@ class FlxSprite extends FlxObject
 	
 	/**
 	 * Set sprite's color transformation with control over color offsets.
-	 * Offsets only work with FlxG.renderBlit.
+	 * With FlxG.renderTile, offset are only supported on OpenFL Next version 3.6.0 or higher.
 	 * 
 	 * @param	redMultiplier		The value for the red multiplier, in the range from 0 to 1. 
 	 * @param	greenMultiplier		The value for the green multiplier, in the range from 0 to 1. 
@@ -827,7 +810,7 @@ class FlxSprite extends FlxObject
 		if (colorTransform == null)
 			colorTransform = new ColorTransform();
 		
-		if ((alpha != 1) || (color != 0xffffff))
+		if (alpha != 1 || color != 0xffffff)
 		{
 			colorTransform.setMultipliers(color.redFloat, color.greenFloat, color.blueFloat, alpha);
 			useColorTransform = true;
@@ -853,12 +836,10 @@ class FlxSprite extends FlxObject
 	public function pixelsOverlapPoint(point:FlxPoint, Mask:Int = 0xFF, ?Camera:FlxCamera):Bool
 	{
 		if (Camera == null)
-		{
 			Camera = FlxG.camera;
-		}
+
 		getScreenPosition(_point, Camera);
-		_point.x = _point.x - offset.x;
-		_point.y = _point.y - offset.y;
+		_point.subtractPoint(offset);
 		_flashPoint.x = (point.x - Camera.scroll.x) - _point.x;
 		_flashPoint.y = (point.y - Camera.scroll.y) - _point.y;
 		
@@ -871,7 +852,7 @@ class FlxSprite extends FlxObject
 		}
 		else // 2. Check pixel at (_flashPoint.x, _flashPoint.y)
 		{
-			var frameData:BitmapData = getFlxFrameBitmapData();
+			var frameData:BitmapData = updateFramePixels();
 			var pixelColor:FlxColor = frameData.getPixel32(Std.int(_flashPoint.x), Std.int(_flashPoint.y));
 			return pixelColor.alpha * alpha >= Mask;
 		}
@@ -890,13 +871,13 @@ class FlxSprite extends FlxObject
 		if (FlxG.renderTile && !RunOnCpp)
 			return;
 		
-		getFlxFrameBitmapData();
+		updateFramePixels();
 	}
 	
 	/**
 	 * Retrieves BitmapData of current FlxFrame. Updates framePixels.
 	 */
-	public function getFlxFrameBitmapData():BitmapData
+	public function updateFramePixels():BitmapData
 	{
 		if (_frame == null || !dirty)
 			return framePixels;
@@ -964,9 +945,7 @@ class FlxSprite extends FlxObject
 	override public function isOnScreen(?Camera:FlxCamera):Bool
 	{
 		if (Camera == null)
-		{
 			Camera = FlxG.camera;
-		}
 		
 		var minX:Float = x - offset.x - Camera.scroll.x * scrollFactor.x;
 		var minY:Float = y - offset.y - Camera.scroll.y * scrollFactor.y;
@@ -1025,18 +1004,14 @@ class FlxSprite extends FlxObject
 	
 	/**
 	 * Returns the result of isSimpleRenderBlit() if FlxG.renderBlit is 
-	 * true or false if FlxG.renderTle is true.
+	 * true or false if FlxG.renderTile is true.
 	 */
 	public function isSimpleRender(?camera:FlxCamera):Bool
 	{ 
-		if (FlxG.renderBlit)
-		{
-			return isSimpleRenderBlit(camera);
-		}
-		else
-		{
+		if (FlxG.renderTile)
 			return false;
-		}
+		
+		return isSimpleRenderBlit(camera);
 	}
 	
 	/**
@@ -1065,7 +1040,7 @@ class FlxSprite extends FlxObject
 	 */
 	public inline function setFacingFlip(Direction:Int, FlipX:Bool, FlipY:Bool):Void
 	{
-		_facingFlip.set(Direction, {x: FlipX, y: FlipY});
+		_facingFlip.set(Direction, { x: FlipX, y: FlipY });
 	}
 	
 	/**
@@ -1342,7 +1317,7 @@ class FlxSprite extends FlxObject
 				
 				if (value)
 				{
-					getFlxFrameBitmapData();
+					updateFramePixels();
 				}
 			}
 			
@@ -1360,7 +1335,7 @@ class FlxSprite extends FlxObject
 		var doFlipX = (flipX != _frame.flipX);
 		if (animation.curAnim != null)
 		{
-			return (doFlipX != animation.curAnim.flipX);
+			return doFlipX != animation.curAnim.flipX;
 		}
 		return doFlipX;
 	}
@@ -1370,7 +1345,7 @@ class FlxSprite extends FlxObject
 		var doFlipY = (flipY != _frame.flipY);
 		if (animation.curAnim != null)
 		{
-			return (doFlipY != animation.curAnim.flipY);
+			return doFlipY != animation.curAnim.flipY;
 		}
 		return doFlipY;
 	}

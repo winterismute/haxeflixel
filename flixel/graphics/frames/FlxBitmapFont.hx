@@ -35,6 +35,9 @@ class FlxBitmapFont extends FlxFramesCollection
 	 */
 	public static inline var DEFAULT_CHARS:String = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 	
+	private static var point:Point = new Point();
+	private static var flashRect:Rectangle = new Rectangle();
+	
 	/**
 	 * The size of the font. Can be useful for AngelCode fonts.
 	 */
@@ -413,11 +416,10 @@ class FlxBitmapFont extends FlxFramesCollection
 		font.updateSourceHeight();
 		
 		// remove background color
-		var point:Point = FlxPoint.point1;
 		point.setTo(Std.int(frame.frame.x), Std.int(frame.frame.y));
 		var bgColor32:Int = bmd.getPixel32(Std.int(frame.frame.x), Std.int(frame.frame.y));
-		#if !bitfive
-		var frameRect:Rectangle = FlxRect.rect;
+
+		var frameRect = flashRect;
 		frame.frame.copyToFlash(frameRect);
 		
 		#if flash
@@ -430,10 +432,7 @@ class FlxBitmapFont extends FlxFramesCollection
 		{
 			bmd.threshold(bmd, frameRect, point, "==", charBGColor, FlxColor.TRANSPARENT, FlxColor.WHITE, true);
 		}
-		#else
-		FlxBitmapDataUtil.replaceColor(bmd, bgColor32, FlxColor.TRANSPARENT, false, frame.frame);
-		FlxBitmapDataUtil.replaceColor(bmd, charBGColor, FlxColor.TRANSPARENT, false, frame.frame);
-		#end
+
 		return font;
 	}
 	
@@ -490,7 +489,7 @@ class FlxBitmapFont extends FlxFramesCollection
 			return font;
 		
 		letters = (letters == null) ? DEFAULT_CHARS : letters;
-		region = (region == null) ? FlxRect.flxRect.set(0, 0, frame.sourceSize.x, frame.sourceSize.y) : region;
+		region = (region == null) ? FlxRect.weak(0, 0, frame.sourceSize.x, frame.sourceSize.y) : region;
 		spacing = (spacing == null) ? FlxPoint.get(0, 0) : spacing;
 		
 		var bitmapWidth:Int = Std.int(region.width);
@@ -498,6 +497,8 @@ class FlxBitmapFont extends FlxFramesCollection
 		
 		var startX:Int = Std.int(region.x);
 		var startY:Int = Std.int(region.y);
+		
+		region.putWeak();
 		
 		var xSpacing:Int = Std.int(spacing.x);
 		var ySpacing:Int = Std.int(spacing.y);
@@ -522,9 +523,9 @@ class FlxBitmapFont extends FlxFramesCollection
 		var letterIndex:Int = 0;
 		var numLetters:Int = letters.length;
 		
-		for (j in 0...(numRows))
+		for (j in 0...numRows)
 		{
-			for (i in 0...(numCols))
+			for (i in 0...numCols)
 			{
 				charRect = FlxRect.get(startX + i * spacedWidth, startY + j * spacedHeight, charWidth, charHeight);
 				offset = FlxPoint.get(0, 0);
@@ -603,9 +604,7 @@ class FlxBitmapFont extends FlxFramesCollection
 	public static function findFont(frame:FlxFrame, border:FlxPoint = null):FlxBitmapFont
 	{
 		if (border == null)
-		{
-			border = FlxPoint.flxPoint1.set();
-		}
+			border = FlxPoint.weak();
 		
 		var bitmapFonts:Array<FlxBitmapFont> = cast frame.parent.getFramesCollections(FlxFrameCollectionType.FONT);
 		for (font in bitmapFonts)

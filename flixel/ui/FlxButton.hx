@@ -19,9 +19,6 @@ import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.util.FlxDestroyUtil;
 
-@:keep @:bitmap("assets/images/ui/button.png")
-class GraphicButton extends BitmapData {}
-
 /**
  * A simple button class that calls a function when clicked by the mouse.
  */
@@ -243,7 +240,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 	
 	private function loadDefaultGraphic():Void
 	{
-		loadGraphic(FlxGraphic.fromClass(GraphicButton), true, 80, 20);
+		loadGraphic("flixel/images/ui/button.png", true, 80, 20);
 	}
 	
 	private function setupAnimation(animationName:String, frameIndex:Int):Void
@@ -438,7 +435,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 	private function checkInput(pointer:FlxPointer, input:IFlxInput, justPressedPosition:FlxPoint, camera:FlxCamera):Bool
 	{
 		if (maxInputMovement != Math.POSITIVE_INFINITY &&
-			FlxMath.getDistance(justPressedPosition, pointer.getScreenPosition()) > maxInputMovement &&
+			justPressedPosition.distanceTo(pointer.getScreenPosition(FlxPoint.weak())) > maxInputMovement &&
 			input == currentInput)
 		{
 			currentInput == null;
