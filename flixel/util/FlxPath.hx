@@ -52,7 +52,7 @@ class FlxPath implements IFlxDestroyable
 	/**
 	 * The list of FlxPoints that make up the path data.
 	 */
-	public var nodes:Array<FlxPoint>;
+	private var nodes:Array<FlxPoint>;
 	
 	/**
 	 * The speed at which the object is moving on the path.
@@ -123,7 +123,10 @@ class FlxPath implements IFlxDestroyable
 	/**
 	 * Creates a new FlxPath.
 	 */
-	public function new() {}
+	public function new()
+	{
+		nodes = new Array<FlxPoint>();
+	}
 	
 	public function reset():FlxPath
 	{
@@ -135,27 +138,41 @@ class FlxPath implements IFlxDestroyable
 		return this;
 	}
 	
-	public function start(Nodes:Array<FlxPoint>, Speed:Float = 100, Mode:Int = FlxPath.FORWARD, AutoRotate:Bool = false):FlxPath
+	public function start(Nodes:Array<FlxPoint>, Speed:Float = 100, Mode:Int = FlxPath.FORWARD, AutoRotate:Bool = false, AsReference:Bool = false):FlxPath
 	{
-		nodes = Nodes;
-		speed = Math.abs(Speed);
-		_mode = Mode;
-		_autoRotate = AutoRotate;
-		restart();
+		if (Nodes != null)
+		{
+			if (AsReference)
+			{
+				nodes = Nodes;
+			}
+			else
+			{
+				nodes = nodes.concat(Nodes);
+			}
+			speed = Math.abs(Speed);
+			_mode = Mode;
+			_autoRotate = AutoRotate;
+			restart();
+		}
 		return this;
 	}
 	
-	public function restart():FlxPath
+	public inline function hasNodes():Bool
 	{
-		finished = false;
-		active = true;
-		_firstUpdate = true;
-		
-		if (nodes == null || nodes.length <= 0)
+		return nodes != null && nodes.length > 0;
+	}
+	
+	public function restart():FlxPath
+	{		
+		active = hasNodes();
+		if (!active)
 		{
-			active = false;
+			return this;
 		}
 		
+		finished = false;
+		_firstUpdate = true;
 		//get starting node
 		if ((_mode == FlxPath.BACKWARD) || (_mode == FlxPath.LOOP_BACKWARD))
 		{
@@ -167,7 +184,6 @@ class FlxPath implements IFlxDestroyable
 			nodeIndex = 0;
 			_inc = 1;
 		}
-		
 		return this;
 	}
 	
@@ -475,6 +491,7 @@ class FlxPath implements IFlxDestroyable
 	public function addAt(X:Float, Y:Float, Index:Int):FlxPath
 	{
 		if (Index < 0) return this;
+		// TODO: not needed because, insert already checks that
 		if (Index > nodes.length)
 		{
 			Index = nodes.length;
@@ -516,6 +533,7 @@ class FlxPath implements IFlxDestroyable
 	public function addPointAt(Node:FlxPoint, Index:Int, AsReference:Bool = false):FlxPath
 	{
 		if (Index < 0) return this;
+		// TODO: not needed
 		if (Index > nodes.length)
 		{
 			Index = nodes.length;
@@ -559,7 +577,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function removeAt(Index:Int):FlxPoint
 	{
-		if (nodes.length <= 0)
+		if (!hasNodes())
 		{
 			return null;
 		}
@@ -577,7 +595,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function head():FlxPoint
 	{
-		if (nodes.length > 0)
+		if (hasNodes())
 		{
 			return nodes[0];
 		}
@@ -591,7 +609,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function tail():FlxPoint
 	{
-		if (nodes.length > 0)
+		if (hasNodes())
 		{
 			return nodes[nodes.length - 1];
 		}
@@ -609,7 +627,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function drawDebug(?Camera:FlxCamera):Void
 	{
-		if (nodes == null || nodes.length <= 0)
+		if (!hasNodes())
 		{
 			return;
 		}
