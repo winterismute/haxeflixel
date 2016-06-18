@@ -1,4 +1,6 @@
 package flixel.system.macros;
+import haxe.io.BytesOutput;
+import haxe.io.Eof;
 
 #if macro
 import haxe.macro.Context;
@@ -71,7 +73,35 @@ class FlxGitSHA
 	
 	public static function getProcessOutput(cmd:String, args:Array<String>):String
 	{
-		return new Process(cmd, args).stdout.readAll().toString();
+		var output = "";
+		try
+		{
+			var process = new Process(cmd, args);
+			var buffer = new BytesOutput();
+			
+			while (true)
+			{
+				try
+				{
+					var currentOutput = process.stdout.readAll(1024);
+					buffer.write(currentOutput);
+					if (currentOutput.length == 0)
+					{
+						break;
+					}
+				}
+				catch (e : Eof)
+				{
+					break;
+				}
+			}
+			
+			process.close();
+			output = buffer.getBytes().toString();
+		}
+		catch (e:Dynamic) {}
+		
+		return output;
 	}
 }
 #end
