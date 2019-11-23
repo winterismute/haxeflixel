@@ -162,9 +162,9 @@ class FlxPath implements IFlxDestroyable
 	public function new(?Nodes:Array<FlxPoint>)
 	{
 		if (Nodes != null)
-			_nodes = Nodes.copy();
+			nodes = Nodes.copy();
 		else
-			_nodes = [];
+			nodes = [];
 	}
 
 	/**
@@ -216,15 +216,15 @@ class FlxPath implements IFlxDestroyable
 		{
 			if (NodesAsReference)
 			{
-				_nodes = Nodes;
+				nodes = Nodes;
 			}
 			else
 			{
-				_nodes = Nodes.copy();
+				nodes = Nodes.copy();
 			}
 		}
 		setProperties(Speed, Mode, AutoRotate);
-		if (_nodes.length > 0)
+		if (nodes.length > 0)
 		{
 			restart();
 		}
@@ -246,7 +246,7 @@ class FlxPath implements IFlxDestroyable
 		//get starting node
 		if ((_mode == FlxPath.BACKWARD) || (_mode == FlxPath.LOOP_BACKWARD))
 		{
-			nodeIndex = _nodes.length - 1;
+			nodeIndex = nodes.length - 1;
 			_inc = -1;
 		}
 		else
@@ -267,8 +267,8 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (NodeIndex < 0)
 			NodeIndex = 0;
-		else if (NodeIndex > _nodes.length - 1)
-			NodeIndex = _nodes.length - 1;
+		else if (NodeIndex > nodes.length - 1)
+			NodeIndex = nodes.length - 1;
 
 		nodeIndex = NodeIndex;
 		advancePath();
@@ -299,7 +299,7 @@ class FlxPath implements IFlxDestroyable
 		{
 			_point.add(object.width * 0.5, object.height * 0.5);
 		}
-		var node:FlxPoint = _nodes[nodeIndex];
+		var node:FlxPoint = nodes[nodeIndex];
 		var deltaX:Float = node.x - _point.x;
 		var deltaY:Float = node.y - _point.y;
 
@@ -407,7 +407,7 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (Snap)
 		{
-			var oldNode:FlxPoint = _nodes[nodeIndex];
+			var oldNode:FlxPoint = nodes[nodeIndex];
 			if (oldNode != null)
 			{
 				if ((_mode & FlxPath.VERTICAL_ONLY) == 0)
@@ -439,7 +439,7 @@ class FlxPath implements IFlxDestroyable
 		}
 		else if ((_mode & FlxPath.LOOP_FORWARD) > 0)
 		{
-			if (nodeIndex >= _nodes.length)
+			if (nodeIndex >= nodes.length)
 			{
 				callComplete = true;
 				nodeIndex = 0;
@@ -449,7 +449,7 @@ class FlxPath implements IFlxDestroyable
 		{
 			if (nodeIndex < 0)
 			{
-				nodeIndex = _nodes.length - 1;
+				nodeIndex = nodes.length - 1;
 				callComplete = true;
 				if (nodeIndex < 0)
 				{
@@ -461,9 +461,9 @@ class FlxPath implements IFlxDestroyable
 		{
 			if (_inc > 0)
 			{
-				if (nodeIndex >= _nodes.length)
+				if (nodeIndex >= nodes.length)
 				{
-					nodeIndex = _nodes.length - 2;
+					nodeIndex = nodes.length - 2;
 					callComplete = true;
 					if (nodeIndex < 0)
 					{
@@ -476,9 +476,9 @@ class FlxPath implements IFlxDestroyable
 			{
 				nodeIndex = 1;
 				callComplete = true;
-				if (nodeIndex >= _nodes.length)
+				if (nodeIndex >= nodes.length)
 				{
-					nodeIndex = _nodes.length - 1;
+					nodeIndex = nodes.length - 1;
 				}
 				if (nodeIndex < 0)
 				{
@@ -489,9 +489,9 @@ class FlxPath implements IFlxDestroyable
 		}
 		else
 		{
-			if (nodeIndex >= _nodes.length)
+			if (nodeIndex >= nodes.length)
 			{
-				nodeIndex = _nodes.length - 1;
+				nodeIndex = nodes.length - 1;
 				callComplete = true;
 				onEnd();
 			}
@@ -502,7 +502,7 @@ class FlxPath implements IFlxDestroyable
 			onComplete(this);
 		}
 
-		return _nodes[nodeIndex];
+		return nodes[nodeIndex];
 	}
 
 	/**
@@ -538,8 +538,8 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function destroy():Void
 	{
-		FlxDestroyUtil.putArray(_nodes);
-		_nodes = null;
+		FlxDestroyUtil.putArray(nodes);
+		nodes = null;
 		object = null;
 		onComplete = null;
 	}
@@ -554,7 +554,7 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function add(X:Float, Y:Float):FlxPath
 	{
-		_nodes.push(FlxPoint.get(X, Y));
+		nodes.push(FlxPoint.get(X, Y));
 		return this;
 	}
 
@@ -571,7 +571,7 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (Index < 0)
 			return this;
-		_nodes.insert(Index, FlxPoint.get(X, Y));
+		nodes.insert(Index, FlxPoint.get(X, Y));
 		return this;
 	}
 
@@ -589,11 +589,11 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (AsReference)
 		{
-			_nodes.push(Node);
+			nodes.push(Node);
 		}
 		else
 		{
-			_nodes.push(FlxPoint.get(Node.x, Node.y));
+			nodes.push(FlxPoint.get(Node.x, Node.y));
 		}
 		return this;
 	}
@@ -615,11 +615,11 @@ class FlxPath implements IFlxDestroyable
 			return this;
 		if (AsReference)
 		{
-			_nodes.insert(Index, Node);
+			nodes.insert(Index, Node);
 		}
 		else
 		{
-			_nodes.insert(Index, FlxPoint.get(Node.x, Node.y));
+			nodes.insert(Index, FlxPoint.get(Node.x, Node.y));
 		}
 		return this;
 	}
@@ -633,10 +633,10 @@ class FlxPath implements IFlxDestroyable
 	 */
 	public function remove(Node:FlxPoint):FlxPoint
 	{
-		var index:Int = _nodes.indexOf(Node);
+		var index:Int = nodes.indexOf(Node);
 		if (index >= 0)
 		{
-			return _nodes.splice(index, 1)[0];
+			return nodes.splice(index, 1)[0];
 		}
 		return null;
 	}
@@ -669,7 +669,7 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (hasNodes())
 		{
-			return _nodes[0];
+			return nodes[0];
 		}
 		return null;
 	}
@@ -683,7 +683,7 @@ class FlxPath implements IFlxDestroyable
 	{
 		if (hasNodes())
 		{
-			return _nodes[_nodes.length - 1];
+			return nodes[nodes.length - 1];
 		}
 		return null;
 	}
@@ -705,7 +705,7 @@ class FlxPath implements IFlxDestroyable
 	@:access(flixel.FlxCamera)
 	public function drawDebug(?Camera:FlxCamera):Void
 	{
-		if (_nodes == null || _nodes.length <= 0)
+		if (nodes == null || nodes.length <= 0)
 		{
 			return;
 		}
@@ -731,11 +731,11 @@ class FlxPath implements IFlxDestroyable
 		var node:FlxPoint;
 		var nextNode:FlxPoint;
 		var i:Int = 0;
-		var l:Int = _nodes.length;
+		var l:Int = nodes.length;
 		while (i < l)
 		{
 			// get a reference to the current node
-			node = _nodes[i];
+			node = nodes[i];
 
 			// find the screen position of the node on this camera
 			_point.x = node.x - (Camera.scroll.x * object.scrollFactor.x); // copied from getScreenPosition()
@@ -772,11 +772,11 @@ class FlxPath implements IFlxDestroyable
 			var lineAlpha:Float = 0.3;
 			if (i < l - 1)
 			{
-				nextNode = _nodes[i + 1];
+				nextNode = nodes[i + 1];
 			}
 			else
 			{
-				nextNode = _nodes[i];
+				nextNode = nodes[i];
 			}
 
 			// then draw a line to the next node
@@ -800,18 +800,4 @@ class FlxPath implements IFlxDestroyable
 		}
 	}
 	#end
-
-	function get_nodes():Array<FlxPoint>
-	{
-		return _nodes;
-	}
-
-	function set_nodes(Nodes:Array<FlxPoint>):Array<FlxPoint>
-	{
-		if (Nodes != null)
-		{
-			_nodes = Nodes;
-		}
-		return _nodes;
-	}
 }
