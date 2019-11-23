@@ -1,16 +1,14 @@
 package flixel.system.debug;
 
-#if !FLX_NO_DEBUG
+#if FLX_DEBUG
 import flash.display.BitmapData;
 import flash.text.TextField;
-import flash.text.TextFieldAutoSize;
-import flash.text.TextFormat;
 import flixel.FlxG;
-import flixel.system.FlxAssets;
 import flixel.system.ui.FlxSystemButton;
-import flixel.util.FlxColor;
+import flixel.system.debug.FlxDebugger.GraphicArrowRight;
+#if FLX_RECORD
 import flixel.util.FlxStringUtil;
-import flixel.system.debug.FlxDebugger;
+#end
 
 @:bitmap("assets/images/debugger/buttons/open.png")
 private class GraphicOpen extends BitmapData {}
@@ -18,7 +16,7 @@ private class GraphicOpen extends BitmapData {}
 @:bitmap("assets/images/debugger/buttons/pause.png")
 private class GraphicPause extends BitmapData {}
 
-@:bitmap("assets/images/debugger/buttons/record_off.png") 
+@:bitmap("assets/images/debugger/buttons/record_off.png")
 private class GraphicRecordOff extends BitmapData {}
 
 @:bitmap("assets/images/debugger/buttons/record_on.png")
@@ -42,8 +40,14 @@ class VCR
 	 * Texfield that displays the runtime display data for a game replay
 	 */
 	public var runtimeDisplay:TextField;
-	
+
 	public var runtime:Float = 0;
+
+	/**
+	 * `true` if the pause happened via the debugger UI, `false` if it happened programmatically
+	 * (or if the VCR is not paused at all right now).
+	 */
+	public var manualPause(default, null):Bool = false;
 
 	public var playbackToggleBtn:FlxSystemButton;
 	public var stepBtn:FlxSystemButton;
@@ -60,22 +64,18 @@ class VCR
 		#if FLX_RECORD
 		recordBtn = Debugger.addButton(CENTER, new GraphicRecordOff(0, 0), FlxG.vcr.startRecording.bind(true));
 		openBtn = Debugger.addButton(CENTER, new GraphicOpen(0, 0), FlxG.vcr.onOpen);
+		#if !flash
+		openBtn.enabled = false;
+		openBtn.alpha = 0.3;
 		#end
-		playbackToggleBtn = Debugger.addButton(CENTER, new GraphicPause(0, 0), FlxG.vcr.pause);
+		#end
+		playbackToggleBtn = Debugger.addButton(CENTER, new GraphicPause(0, 0), onManualPause);
 		stepBtn = Debugger.addButton(CENTER, new GraphicStep(0, 0), onStep);
-		
+
 		#if FLX_RECORD
-		runtimeDisplay = new TextField();
-		runtimeDisplay.height = 10;
-		runtimeDisplay.y = -9;
-		runtimeDisplay.selectable = false;
-		runtimeDisplay.multiline = false;
-		runtimeDisplay.embedFonts = true;
-		var format = new TextFormat(FlxAssets.FONT_DEBUGGER, 12, FlxColor.WHITE);
-		runtimeDisplay.defaultTextFormat = format;
-		runtimeDisplay.autoSize = TextFieldAutoSize.LEFT;
+		runtimeDisplay = DebuggerUtil.createTextField(0, -9);
 		updateRuntime(0);
-		
+
 		var runtimeBtn = Debugger.addButton(CENTER);
 		runtimeBtn.addChild(runtimeDisplay);
 		#end
@@ -101,7 +101,7 @@ class VCR
 		recordBtn.changeIcon(new GraphicRecordOn(0, 0));
 		recordBtn.upHandler = FlxG.vcr.startRecording.bind(true);
 	}
-	
+
 	/**
 	 * Usually called by FlxGame when a replay has been stopped.
 	 * Just updates the VCR GUI so the buttons are in the right state.
@@ -111,7 +111,7 @@ class VCR
 		recordBtn.changeIcon(new GraphicRecordOff(0, 0));
 		recordBtn.upHandler = FlxG.vcr.startRecording.bind(true);
 	}
-	
+
 	/**
 	 * Usually called by FlxGame when a requested replay has begun.
 	 * Just updates the VCR GUI so the buttons are in the right state.
@@ -121,7 +121,7 @@ class VCR
 		recordBtn.changeIcon(new GraphicStop(0, 0));
 		recordBtn.upHandler = FlxG.vcr.stopReplay;
 	}
-	
+
 	/**
 	 * Just updates the VCR GUI so the runtime displays roughly the right thing.
 	 */
@@ -136,12 +136,18 @@ class VCR
 	}
 	#end
 
+	function onManualPause()
+	{
+		manualPause = true;
+		FlxG.vcr.pause();
+	}
+
 	/**
 	 * Called when the user presses the Pause button.
 	 * This is different from user-defined pause behavior, or focus lost behavior.
 	 * Does NOT pause music playback!!
 	 */
-	public inline function onPause():Void
+	public function onPause():Void
 	{
 		playbackToggleBtn.upHandler = FlxG.vcr.resume;
 		playbackToggleBtn.changeIcon(new GraphicArrowRight(0, 0));
@@ -151,9 +157,10 @@ class VCR
 	 * Called when the user presses the Play button.
 	 * This is different from user-defined unpause behavior, or focus gained behavior.
 	 */
-	public inline function onResume():Void
+	public function onResume():Void
 	{
-		playbackToggleBtn.upHandler = FlxG.vcr.pause;
+		manualPause = false;
+		playbackToggleBtn.upHandler = onManualPause;
 		playbackToggleBtn.changeIcon(new GraphicPause(0, 0));
 	}
 

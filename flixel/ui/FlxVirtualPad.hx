@@ -10,11 +10,11 @@ import flixel.util.FlxDestroyUtil;
 /**
  * A gamepad which contains 4 directional buttons and 4 action buttons.
  * It's easy to set the callbacks and to customize the layout.
- * 
+ *
  * @author Ka Wing Chin
  */
 class FlxVirtualPad extends FlxSpriteGroup
-{	
+{
 	public var buttonA:FlxButton;
 	public var buttonB:FlxButton;
 	public var buttonC:FlxButton;
@@ -24,41 +24,39 @@ class FlxVirtualPad extends FlxSpriteGroup
 	public var buttonUp:FlxButton;
 	public var buttonRight:FlxButton;
 	public var buttonDown:FlxButton;
+
 	/**
 	 * Group of directions buttons.
-	 */ 
+	 */
 	public var dPad:FlxSpriteGroup;
+
 	/**
 	 * Group of action buttons.
-	 */ 
+	 */
 	public var actions:FlxSpriteGroup;
-	
+
 	/**
 	 * Create a gamepad which contains 4 directional buttons and 4 action buttons.
-	 * 
-	 * @param 	DPadMode	The D-Pad mode. FULL for example.
-	 * @param 	ActionMode	The action buttons mode. A_B_C for example.
+	 *
+	 * @param   DPadMode     The D-Pad mode. `FULL` for example.
+	 * @param   ActionMode   The action buttons mode. `A_B_C` for example.
 	 */
 	public function new(?DPad:FlxDPadMode, ?Action:FlxActionMode)
-	{	
+	{
 		super();
 		scrollFactor.set();
-		
+
 		if (DPad == null)
-		{
 			DPad = FULL;
-		}
 		if (Action == null)
-		{
 			Action = A_B_C;
-		}
-		
+
 		dPad = new FlxSpriteGroup();
 		dPad.scrollFactor.set();
-		
+
 		actions = new FlxSpriteGroup();
 		actions.scrollFactor.set();
-		
+
 		switch (DPad)
 		{
 			case UP_DOWN:
@@ -78,7 +76,7 @@ class FlxVirtualPad extends FlxSpriteGroup
 				dPad.add(add(buttonDown = createButton(35, FlxG.height - 45, 44, 45, "down")));
 			case NONE: // do nothing
 		}
-		
+
 		switch (Action)
 		{
 			case A:
@@ -98,14 +96,14 @@ class FlxVirtualPad extends FlxSpriteGroup
 			case NONE: // do nothing
 		}
 	}
-	
+
 	override public function destroy():Void
 	{
 		super.destroy();
-		
+
 		dPad = FlxDestroyUtil.destroy(dPad);
 		actions = FlxDestroyUtil.destroy(actions);
-		
+
 		dPad = null;
 		actions = null;
 		buttonA = null;
@@ -118,15 +116,15 @@ class FlxVirtualPad extends FlxSpriteGroup
 		buttonDown = null;
 		buttonRight = null;
 	}
-	
+
 	/**
-	 * @param 	X			The x-position of the button.
-	 * @param 	Y			The y-position of the button.
-	 * @param 	Width		The width of the button.
-	 * @param 	Height		The height of the button.
-	 * @param 	Graphic		The image of the button. It must contains 3 frames (NORMAL, HIGHLIGHT, PRESSED).
-	 * @param 	Callback	The callback for the button.
-	 * @return	The button
+	 * @param   X          The x-position of the button.
+	 * @param   Y          The y-position of the button.
+	 * @param   Width      The width of the button.
+	 * @param   Height     The height of the button.
+	 * @param   Graphic    The image of the button. It must contains 3 frames (`NORMAL`, `HIGHLIGHT`, `PRESSED`).
+	 * @param   Callback   The callback for the button.
+	 * @return  The button
 	 */
 	public function createButton(X:Float, Y:Float, Width:Int, Height:Int, Graphic:String, ?OnClick:Void->Void):FlxButton
 	{
@@ -137,16 +135,14 @@ class FlxVirtualPad extends FlxSpriteGroup
 		button.solid = false;
 		button.immovable = true;
 		button.scrollFactor.set();
-		
-		#if !FLX_NO_DEBUG
+
+		#if FLX_DEBUG
 		button.ignoreDrawDebug = true;
 		#end
-		
+
 		if (OnClick != null)
-		{
 			button.onDown.callback = OnClick;
-		}
-		
+
 		return button;
 	}
 }

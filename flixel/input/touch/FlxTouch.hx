@@ -1,12 +1,8 @@
 package flixel.input.touch;
 
-#if !FLX_NO_TOUCH
+#if FLX_TOUCH
 import flash.geom.Point;
-import flixel.FlxBasic;
-import flixel.FlxCamera;
 import flixel.FlxG;
-import flixel.FlxObject;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.input.FlxInput;
 import flixel.input.FlxSwipe;
 import flixel.input.IFlxInput;
@@ -19,23 +15,24 @@ import flixel.util.FlxDestroyUtil;
  */
 @:allow(flixel.input.touch.FlxTouchManager)
 class FlxTouch extends FlxPointer implements IFlxDestroyable implements IFlxInput
-{	
+{
 	/**
-	 * The unique ID of this touch. Example: if there are 3 concurrently active touches 
-	 * (and the device supports that many), they will have the IDs 0, 1 and 2.
+	 * The _unique_ ID of this touch. You should not make not any further assumptions
+	 * about this value - IDs are not guaranteed to start from 0 or ascend in order.
+	 * The behavior may vary from device to device.
 	 */
 	public var touchPointID(get, never):Int;
-	
+
 	public var justReleased(get, never):Bool;
 	public var released(get, never):Bool;
 	public var pressed(get, never):Bool;
 	public var justPressed(get, never):Bool;
-	
-	private var input:FlxInput<Int>;
-	private var flashPoint = new Point();
-	
+
+	var input:FlxInput<Int>;
+	var flashPoint = new Point();
+
 	public var justPressedPosition(default, null) = FlxPoint.get();
-	public var justPressedTimeInTicks(default, null):Float = -1;
+	public var justPressedTimeInTicks(default, null):Int = -1;
 
 	public function destroy():Void
 	{
@@ -53,27 +50,27 @@ class FlxTouch extends FlxPointer implements IFlxDestroyable implements IFlxInpu
 		input.ID = pointID;
 		input.reset();
 	}
-	
+
 	/**
 	 * @param	X			stageX touch coordinate
 	 * @param	Y			stageX touch coordinate
 	 * @param	PointID		touchPointID of the touch
 	 */
-	private function new(x:Int = 0, y:Int = 0, pointID:Int = 0)
+	function new(x:Int = 0, y:Int = 0, pointID:Int = 0)
 	{
 		super();
-		
+
 		input = new FlxInput(pointID);
 		setXY(x, y);
 	}
-	
+
 	/**
 	 * Called by the internal game loop to update the just pressed/just released flags.
 	 */
-	private function update():Void
+	function update():Void
 	{
 		input.update();
-		
+
 		if (justPressed)
 		{
 			justPressedPosition.set(screenX, screenY);
@@ -86,42 +83,42 @@ class FlxTouch extends FlxPointer implements IFlxDestroyable implements IFlxInpu
 		}
 		#end
 	}
-	
+
 	/**
 	 * Function for updating touch coordinates. Called by the TouchManager.
-	 * 
+	 *
 	 * @param	X	stageX touch coordinate
 	 * @param	Y	stageY touch coordinate
 	 */
-	private function setXY(X:Int, Y:Int):Void
+	function setXY(X:Int, Y:Int):Void
 	{
 		flashPoint.setTo(X, Y);
 		flashPoint = FlxG.game.globalToLocal(flashPoint);
-		
+
 		setGlobalScreenPositionUnsafe(flashPoint.x, flashPoint.y);
 	}
-	
-	private inline function get_touchPointID():Int
+
+	inline function get_touchPointID():Int
 	{
 		return input.ID;
 	}
-	
-	private inline function get_justReleased():Bool
+
+	inline function get_justReleased():Bool
 	{
 		return input.justReleased;
 	}
-	
-	private inline function get_released():Bool
+
+	inline function get_released():Bool
 	{
 		return input.released;
 	}
-	
-	private inline function get_pressed():Bool
+
+	inline function get_pressed():Bool
 	{
 		return input.pressed;
 	}
-	
-	private inline function get_justPressed():Bool
+
+	inline function get_justPressed():Bool
 	{
 		return input.justPressed;
 	}

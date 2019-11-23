@@ -2,25 +2,24 @@ package flixel.input.gamepad.mappings;
 
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.gamepad.id.LogitechID;
-import flixel.input.gamepad.mappings.FlxGamepadMapping;
 
 class LogitechMapping extends FlxGamepadMapping
 {
 	#if FLX_JOYSTICK_API
-	private static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 20;
-	private static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 21;
+	static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 20;
+	static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 21;
 
-	private static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 22;
-	private static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 23;
+	static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 22;
+	static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 23;
 	#end
-	
-	override function initValues():Void 
+
+	override function initValues():Void
 	{
-		leftStick = LogitechID.LEFT_ANALOG_STICK; 
-		rightStick = LogitechID.RIGHT_ANALOG_STICK; 
+		leftStick = LogitechID.LEFT_ANALOG_STICK;
+		rightStick = LogitechID.RIGHT_ANALOG_STICK;
 	}
-	
-	override public function getID(rawID:Int):FlxGamepadInputID 
+
+	override public function getID(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -41,11 +40,19 @@ class LogitechMapping extends FlxGamepadMapping
 			case LogitechID.DPAD_RIGHT: DPAD_RIGHT;
 			case LogitechID.DPAD_UP: DPAD_UP;
 			case LogitechID.LOGITECH: GUIDE;
-			default: NONE;
+			case id if (id == leftStick.rawUp): LEFT_STICK_DIGITAL_UP;
+			case id if (id == leftStick.rawDown): LEFT_STICK_DIGITAL_DOWN;
+			case id if (id == leftStick.rawLeft): LEFT_STICK_DIGITAL_LEFT;
+			case id if (id == leftStick.rawRight): LEFT_STICK_DIGITAL_RIGHT;
+			case id if (id == rightStick.rawUp): RIGHT_STICK_DIGITAL_UP;
+			case id if (id == rightStick.rawDown): RIGHT_STICK_DIGITAL_DOWN;
+			case id if (id == rightStick.rawLeft): RIGHT_STICK_DIGITAL_LEFT;
+			case id if (id == rightStick.rawRight): RIGHT_STICK_DIGITAL_RIGHT;
+			case _: NONE;
 		}
 	}
 
-	override public function getRawID(ID:FlxGamepadInputID):Int 
+	override public function getRawID(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -66,6 +73,14 @@ class LogitechMapping extends FlxGamepadMapping
 			case DPAD_RIGHT: LogitechID.DPAD_RIGHT;
 			case LEFT_TRIGGER: LogitechID.SEVEN;
 			case RIGHT_TRIGGER: LogitechID.EIGHT;
+			case LEFT_STICK_DIGITAL_UP: LogitechID.LEFT_ANALOG_STICK.rawUp;
+			case LEFT_STICK_DIGITAL_DOWN: LogitechID.LEFT_ANALOG_STICK.rawDown;
+			case LEFT_STICK_DIGITAL_LEFT: LogitechID.LEFT_ANALOG_STICK.rawLeft;
+			case LEFT_STICK_DIGITAL_RIGHT: LogitechID.LEFT_ANALOG_STICK.rawRight;
+			case RIGHT_STICK_DIGITAL_UP: LogitechID.RIGHT_ANALOG_STICK.rawUp;
+			case RIGHT_STICK_DIGITAL_DOWN: LogitechID.RIGHT_ANALOG_STICK.rawDown;
+			case RIGHT_STICK_DIGITAL_LEFT: LogitechID.RIGHT_ANALOG_STICK.rawLeft;
+			case RIGHT_STICK_DIGITAL_RIGHT: LogitechID.RIGHT_ANALOG_STICK.rawRight;
 			#if FLX_JOYSTICK_API
 			case LEFT_TRIGGER_FAKE: LogitechID.SEVEN;
 			case RIGHT_TRIGGER_FAKE: LogitechID.EIGHT;
@@ -73,15 +88,16 @@ class LogitechMapping extends FlxGamepadMapping
 			default: -1;
 		}
 	}
-	
+
 	#if FLX_JOYSTICK_API
-	override public function axisIndexToRawID(axisID:Int):Int 
+	override public function axisIndexToRawID(axisID:Int):Int
 	{
-		return if (axisID == leftStick.x) LEFT_ANALOG_STICK_FAKE_X;
-			else if (axisID == leftStick.y) LEFT_ANALOG_STICK_FAKE_Y;
-			else if (axisID == rightStick.x) RIGHT_ANALOG_STICK_FAKE_X;
-			else if (axisID == rightStick.y) RIGHT_ANALOG_STICK_FAKE_Y;
-			else axisID;  // return what was passed in, no overlaps for other IDs
+		return if (axisID == leftStick.x) LEFT_ANALOG_STICK_FAKE_X; else if (axisID == leftStick.y) LEFT_ANALOG_STICK_FAKE_Y; else if (axisID == rightStick.x)
+			RIGHT_ANALOG_STICK_FAKE_X;
+		else if (axisID == rightStick.y)
+			RIGHT_ANALOG_STICK_FAKE_Y;
+		else
+			axisID; // return what was passed in, no overlaps for other IDs
 	}
 	#end
 }

@@ -1,6 +1,5 @@
 package flixel.math;
 
-import flixel.math.FlxAngle;
 import massive.munit.Assert;
 
 class FlxAngleTest
@@ -8,9 +7,8 @@ class FlxAngleTest
 	@Test // #1610
 	function testWrapAngle()
 	{
-		var testAngle = function(expected, toWrap)
-			Assert.areEqual(expected, FlxAngle.wrapAngle(toWrap));
-		
+		var testAngle = function(expected, toWrap) Assert.areEqual(expected, FlxAngle.wrapAngle(toWrap));
+
 		testAngle(-170, 190);
 		testAngle(170, -190);
 		testAngle(-90, 270);

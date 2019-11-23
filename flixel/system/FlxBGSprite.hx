@@ -10,13 +10,14 @@ class FlxBGSprite extends FlxSprite
 	public function new()
 	{
 		super();
-		makeGraphic(1, 1, FlxColor.TRANSPARENT, true, FlxG.bitmap.getUniqueKey("bg_graphic_"));
+		makeGraphic(1, 1, FlxColor.WHITE, true, FlxG.bitmap.getUniqueKey("bg_graphic_"));
 		scrollFactor.set();
 	}
-	
+
 	/**
 	 * Called by game loop, updates then blits or renders current frame of animation to the screen
 	 */
+	@:access(flixel.FlxCamera)
 	override public function draw():Void
 	{
 		for (camera in cameras)
@@ -25,12 +26,12 @@ class FlxBGSprite extends FlxSprite
 			{
 				continue;
 			}
-			
+
 			_matrix.identity();
-			_matrix.scale(camera.width, camera.height);
+			_matrix.scale(camera.viewWidth, camera.viewHeight);
 			camera.drawPixels(frame, _matrix, colorTransform);
-			
-			#if !FLX_NO_DEBUG
+
+			#if FLX_DEBUG
 			FlxBasic.visibleCount++;
 			#end
 		}

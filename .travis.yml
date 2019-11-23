@@ -1,44 +1,31 @@
 language: haxe
+dist: xenial
+services:
+  - xvfb
 
 haxe:
-  - 3.2.0
+  - 3.4.7
   - development
 
-env: 
-  - TARGET=flash
-  - TARGET=neko
-  - TARGET=cpp
-  - TARGET=html5
+env:
+  - TARGET=flash OPENFL=new
+  - TARGET=neko  OPENFL=new
+  - TARGET=cpp   OPENFL=new
+  - TARGET=html5 OPENFL=new
 
-sudo: false
+addons:
+  apt:
+    packages:
+    - gcc-multilib
+    - g++-multilib
 
-matrix:
-  allow_failures:
-    - haxe: development
+before_install:
+  - export DISPLAY=:99.0
 
 install:
-  - haxelib install munit > /dev/null
-  - haxelib install hamcrest > /dev/null
-  - haxelib install lime > /dev/null
-  - haxelib install openfl > /dev/null
-  - haxelib install hxcpp > /dev/null
-  - haxelib install systools > /dev/null
-  - haxelib install nape > /dev/null
-  - haxelib install task > /dev/null
-  - haxelib install hscript > /dev/null
-  - haxelib install poly2trihx > /dev/null
-  - haxelib git spinehaxe https://github.com/bendmorris/spinehaxe > /dev/null
-  - haxelib git firetongue https://github.com/larsiusprime/firetongue > /dev/null
-  - haxelib git flixel-tools https://github.com/HaxeFlixel/flixel-tools > /dev/null
-  - haxelib git flixel-demos https://github.com/HaxeFlixel/flixel-demos dev > /dev/null
-  - haxelib git flixel-addons https://github.com/HaxeFlixel/flixel-addons dev > /dev/null
-  - haxelib git flixel-ui https://github.com/HaxeFlixel/flixel-ui dev > /dev/null
-  - haxelib dev flixel $TRAVIS_BUILD_DIR
-  - haxelib list
+  - haxelib dev flixel .
 
 script:
-  - cd $HOME/haxe/lib/flixel-tools/git
-  - haxe build.hxml
-  - cd $TRAVIS_BUILD_DIR/tests
-  - haxe RunTravis.hxml
-  - neko RunTravis.n $TARGET
+  - while sleep 540; do echo "=====[ $SECONDS seconds still running ]====="; done &
+  - haxe --cwd tests --run RunTravis $TARGET $OPENFL
+  - kill %1

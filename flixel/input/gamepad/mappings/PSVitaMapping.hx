@@ -2,17 +2,16 @@ package flixel.input.gamepad.mappings;
 
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.gamepad.id.PSVitaID;
-import flixel.input.gamepad.mappings.FlxGamepadMapping;
 
 class PSVitaMapping extends FlxGamepadMapping
 {
-	override function initValues():Void 
+	override function initValues():Void
 	{
 		leftStick = PSVitaID.LEFT_ANALOG_STICK;
 		rightStick = PSVitaID.RIGHT_ANALOG_STICK;
 	}
-	
-	override public function getID(rawID:Int):FlxGamepadInputID 
+
+	override public function getID(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -28,11 +27,19 @@ class PSVitaMapping extends FlxGamepadMapping
 			case PSVitaID.DPAD_UP: DPAD_UP;
 			case PSVitaID.DPAD_LEFT: DPAD_LEFT;
 			case PSVitaID.DPAD_RIGHT: DPAD_RIGHT;
-			default: NONE;
+			case id if (id == leftStick.rawUp): LEFT_STICK_DIGITAL_UP;
+			case id if (id == leftStick.rawDown): LEFT_STICK_DIGITAL_UP;
+			case id if (id == leftStick.rawLeft): LEFT_STICK_DIGITAL_LEFT;
+			case id if (id == leftStick.rawRight): LEFT_STICK_DIGITAL_RIGHT;
+			case id if (id == rightStick.rawUp): RIGHT_STICK_DIGITAL_UP;
+			case id if (id == rightStick.rawDown): RIGHT_STICK_DIGITAL_DOWN;
+			case id if (id == rightStick.rawLeft): RIGHT_STICK_DIGITAL_LEFT;
+			case id if (id == rightStick.rawRight): RIGHT_STICK_DIGITAL_RIGHT;
+			case _: NONE;
 		}
 	}
-	
-	override public function getRawID(ID:FlxGamepadInputID):Int 
+
+	override public function getRawID(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -48,13 +55,20 @@ class PSVitaMapping extends FlxGamepadMapping
 			case DPAD_DOWN: PSVitaID.DPAD_DOWN;
 			case DPAD_LEFT: PSVitaID.DPAD_LEFT;
 			case DPAD_RIGHT: PSVitaID.DPAD_RIGHT;
+			case LEFT_STICK_DIGITAL_UP: PSVitaID.LEFT_ANALOG_STICK.rawUp;
+			case LEFT_STICK_DIGITAL_DOWN: PSVitaID.LEFT_ANALOG_STICK.rawDown;
+			case LEFT_STICK_DIGITAL_LEFT: PSVitaID.LEFT_ANALOG_STICK.rawLeft;
+			case LEFT_STICK_DIGITAL_RIGHT: PSVitaID.LEFT_ANALOG_STICK.rawRight;
+			case RIGHT_STICK_DIGITAL_UP: PSVitaID.RIGHT_ANALOG_STICK.rawUp;
+			case RIGHT_STICK_DIGITAL_DOWN: PSVitaID.RIGHT_ANALOG_STICK.rawDown;
+			case RIGHT_STICK_DIGITAL_LEFT: PSVitaID.RIGHT_ANALOG_STICK.rawLeft;
+			case RIGHT_STICK_DIGITAL_RIGHT: PSVitaID.RIGHT_ANALOG_STICK.rawRight;
 			default: -1;
 		}
 	}
-	
-	override public function isAxisFlipped(axisID:Int):Bool 
+
+	override public function isAxisFlipped(axisID:Int):Bool
 	{
-		return axisID == PSVitaID.LEFT_ANALOG_STICK.y ||
-			axisID == PSVitaID.RIGHT_ANALOG_STICK.y;
+		return axisID == PSVitaID.LEFT_ANALOG_STICK.y || axisID == PSVitaID.RIGHT_ANALOG_STICK.y;
 	}
 }

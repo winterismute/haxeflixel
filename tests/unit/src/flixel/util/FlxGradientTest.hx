@@ -1,7 +1,5 @@
 package flixel.util;
 
-import flixel.util.FlxGradient;
-import flixel.util.FlxColor;
 import massive.munit.Assert;
 
 class FlxGradientTest extends FlxTest
@@ -11,7 +9,7 @@ class FlxGradientTest extends FlxTest
 	{
 		var colors = [FlxColor.GREEN, FlxColor.BLACK, FlxColor.WHITE];
 		var matrix = FlxGradient.createGradientMatrix(10, 10, colors);
-		
+
 		Assert.areEqual(colors.length, matrix.ratio.length);
 	}
 
@@ -20,7 +18,7 @@ class FlxGradientTest extends FlxTest
 	{
 		var colors = [FlxColor.GREEN, FlxColor.BLACK, FlxColor.WHITE];
 		var bitmapData = FlxGradient.createGradientBitmapData(10, 10, colors);
-		
+
 		var uniqueColors = [];
 		for (i in 0...10)
 		{

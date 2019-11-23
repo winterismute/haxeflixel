@@ -1,18 +1,17 @@
 package flixel.math;
 
-import flixel.math.FlxMatrix;
 import massive.munit.Assert;
 
 class FlxMatrixTest extends FlxTest
 {
 	var matrix:FlxMatrix;
-	
+
 	@Before
 	function before()
 	{
 		matrix = new FlxMatrix();
 	}
-	
+
 	@Test // #1326
 	function testDefaultValues()
 	{

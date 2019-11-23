@@ -1,18 +1,21 @@
 package flixel.effects.postprocess;
 
 #if FLX_POST_PROCESS
-import openfl.gl.*;
+import openfl.gl.GL;
+import openfl.gl.GLProgram;
+import openfl.gl.GLShader;
 
 /**
  * GLSL Shader object
  */
 class Shader
 {
-	private var program:GLProgram;
-	
+	var program:GLProgram;
+
 	/**
 	 * Creates a new Shader
-	 * @param sources  A list of glsl shader sources to compile and link into a program
+	 *
+	 * @param  sources   A list of GLSL shader sources to compile and link into a program
 	 */
 	public function new(sources:Array<ShaderSource>)
 	{
@@ -21,7 +24,8 @@ class Shader
 		for (source in sources)
 		{
 			var shader = compile(source.src, source.fragment ? GL.FRAGMENT_SHADER : GL.VERTEX_SHADER);
-			if (shader == null) return;
+			if (shader == null)
+				return;
 			GL.attachShader(program, shader);
 			GL.deleteShader(shader);
 		}
@@ -39,10 +43,11 @@ class Shader
 
 	/**
 	 * Compiles the shader source into a GlShader object and prints any errors
-	 * @param source  The shader source code
-	 * @param type    The type of shader to compile (fragment, vertex)
+	 *
+	 * @param   source   The shader source code
+	 * @param   type     The type of shader to compile (fragment, vertex)
 	 */
-	private function compile(source:String, type:Int):GLShader
+	function compile(source:String, type:Int):GLShader
 	{
 		var shader = GL.createShader(type);
 		GL.shaderSource(shader, source);
@@ -59,7 +64,8 @@ class Shader
 
 	/**
 	 * Return the attribute location in this shader
-	 * @param a  The attribute name to find
+	 *
+	 * @param   a   The attribute name to find
 	 */
 	public inline function attribute(a:String):Int
 	{
@@ -68,7 +74,8 @@ class Shader
 
 	/**
 	 * Return the uniform location in this shader
-	 * @param a  The uniform name to find
+	 *
+	 * @param   a   The uniform name to find
 	 */
 	public inline function uniform(u:String):Int
 	{

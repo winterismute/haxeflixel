@@ -1,2 +1,0 @@
--cmd haxelib run lime build flash
--cmd haxelib run munit test

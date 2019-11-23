@@ -1,7 +1,6 @@
 package flixel.input.mouse;
 
-#if !FLX_NO_MOUSE
-import flash.events.MouseEvent;
+#if FLX_MOUSE
 import flixel.FlxG;
 import flixel.input.FlxSwipe;
 import flixel.util.FlxDestroyUtil;
@@ -14,26 +13,25 @@ class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 		return switch (id)
 		{
 			case LEFT: FlxG.mouse._leftButton;
-			
 			#if FLX_MOUSE_ADVANCED
-				case MIDDLE: FlxG.mouse._middleButton;
-				case RIGHT: FlxG.mouse._rightButton;
+			case MIDDLE: FlxG.mouse._middleButton;
+			case RIGHT: FlxG.mouse._rightButton;
 			#else
-				case _: return null;
+			case _: return null;
 			#end
 		}
 	}
-	
+
 	public var justPressedPosition(default, null) = FlxPoint.get();
-	public var justPressedTimeInTicks(default, null):Float = -1;
-	
+	public var justPressedTimeInTicks(default, null):Int = -1;
+
 	/**
-	 * Upates the last and current state of this mouse button.
+	 * Updates the last and current state of this mouse button.
 	 */
 	override public function update():Void
 	{
 		super.update();
-		
+
 		if (justPressed)
 		{
 			justPressedPosition.set(FlxG.mouse.screenX, FlxG.mouse.screenY);
@@ -46,24 +44,14 @@ class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 		}
 		#end
 	}
-	
+
 	public inline function destroy():Void
 	{
 		justPressedPosition = FlxDestroyUtil.put(justPressedPosition);
 	}
-	
+
 	public function onDown(_):Void
 	{
-		#if !FLX_NO_DEBUG
-		if (ID == FlxMouseButtonID.LEFT && FlxG.debugger.visible)
-		{
-			if (FlxG.game.debugger.hasMouse)
-			{
-				return;
-			}
-		}
-		#end
-		
 		// Check for replay cancel keys
 		#if FLX_RECORD
 		if (FlxG.game.replaying && FlxG.vcr.cancelKeys != null)
@@ -76,24 +64,17 @@ class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 					break;
 				}
 			}
-			return;
-		}
-		#end
-		
-		press();
-	}
-	
-	public function onUp(?_):Void
-	{
-		#if !FLX_NO_DEBUG
-		if ((FlxG.debugger.visible && FlxG.game.debugger.hasMouse) 
-			#if (FLX_RECORD) || FlxG.game.replaying #end)
-		{
-			return;
 		}
 		#end
 
-		release();
+		if (FlxG.mouse.enabled)
+			press();
+	}
+
+	public function onUp(?_):Void
+	{
+		if (FlxG.mouse.enabled)
+			release();
 	}
 }
 #end
@@ -104,7 +85,7 @@ class FlxMouseButton extends FlxInput<Int> implements IFlxDestroyable
 @:enum
 abstract FlxMouseButtonID(Int) to Int
 {
-	var LEFT   = -1;
+	var LEFT = -1;
 	var MIDDLE = -2;
-	var RIGHT  = -3;
+	var RIGHT = -3;
 }

@@ -4,23 +4,22 @@ import flixel.input.IFlxInputManager;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxStringUtil;
 
-@:allow(flixel)
 class InputFrontEnd
 {
 	/**
 	 * A read-only list of all inputs.
 	 */
 	public var list(default, null):Array<IFlxInputManager> = [];
-	
+
 	/**
 	 * Whether inputs are reset on state switches.
 	 * Disable if you need persistent input states across states.
 	 */
 	public var resetOnStateSwitch:Bool = true;
-	
+
 	/**
 	 * Add an input to the system
-	 * 
+	 *
 	 * @param	Input 	The input to add
 	 * @return	The input
 	 */
@@ -35,14 +34,14 @@ class InputFrontEnd
 				return Input;
 			}
 		}
-		
+
 		list.push(Input);
 		return Input;
 	}
-	
+
 	/**
 	 * Removes an input from the system
-	 * 
+	 *
 	 * @param	Input	The input to remove
 	 * @return	Bool indicating whether it was removed or not
 	 */
@@ -61,16 +60,16 @@ class InputFrontEnd
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Replace an existing input in the system with a new one
-	 * 
+	 *
 	 * @param	Old 	The old input to replace
 	 * @param	New 	The new input to put in its place
 	 * @return	If successful returns New. Otherwise returns null.
 	 */
 	@:generic
-	public function replace<T:IFlxInputManager>(Old:T,New:T):T
+	public function replace<T:IFlxInputManager>(Old:T, New:T):T
 	{
 		var i:Int = 0;
 		var success:Bool = false;
@@ -78,20 +77,20 @@ class InputFrontEnd
 		{
 			if (input == Old)
 			{
-				list[i] = New;			//Replace Old with New
+				list[i] = New; // Replace Old with New
 				success = true;
 				break;
 			}
 			i++;
 		}
-		
+
 		if (success)
 		{
 			return New;
 		}
 		return null;
 	}
-	
+
 	public function reset():Void
 	{
 		for (input in list)
@@ -99,42 +98,48 @@ class InputFrontEnd
 			input.reset();
 		}
 	}
-	
-	private function new() {}
-	
-	private inline function update():Void
+
+	@:allow(flixel.FlxG)
+	function new() {}
+
+	@:allow(flixel.FlxGame)
+	inline function update():Void
 	{
 		for (input in list)
 		{
 			input.update();
 		}
 	}
-	
-	private inline function onFocus():Void
+
+	@:allow(flixel.FlxGame)
+	inline function onFocus():Void
 	{
 		for (input in list)
 		{
 			input.onFocus();
 		}
 	}
-	
-	private inline function onFocusLost():Void
+
+	@:allow(flixel.FlxGame)
+	inline function onFocusLost():Void
 	{
 		for (input in list)
 		{
 			input.onFocusLost();
 		}
 	}
-	
-	private function onStateSwitch():Void
+
+	@:allow(flixel.FlxGame)
+	@:allow(flixel.FlxState.resetSubState)
+	function onStateSwitch():Void
 	{
 		if (resetOnStateSwitch)
 		{
 			reset();
 		}
 	}
-	
-	private function destroy():Void
+
+	function destroy():Void
 	{
 		for (input in list)
 		{

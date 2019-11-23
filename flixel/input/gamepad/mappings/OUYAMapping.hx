@@ -2,25 +2,24 @@ package flixel.input.gamepad.mappings;
 
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.gamepad.id.OUYAID;
-import flixel.input.gamepad.mappings.FlxGamepadMapping;
 
 class OUYAMapping extends FlxGamepadMapping
 {
 	#if FLX_JOYSTICK_API
-	private static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 19;
-	private static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 20;
+	static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 19;
+	static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 20;
 
-	private static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 21;
-	private static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 22;
+	static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 21;
+	static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 22;
 	#end
-	
-	override function initValues():Void 
+
+	override function initValues():Void
 	{
 		leftStick = OUYAID.LEFT_ANALOG_STICK;
 		rightStick = OUYAID.RIGHT_ANALOG_STICK;
 	}
-	
-	override public function getID(rawID:Int):FlxGamepadInputID 
+
+	override public function getID(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -39,11 +38,19 @@ class OUYAMapping extends FlxGamepadMapping
 			case OUYAID.DPAD_DOWN: DPAD_DOWN;
 			case OUYAID.DPAD_LEFT: DPAD_LEFT;
 			case OUYAID.DPAD_RIGHT: DPAD_RIGHT;
-			default: NONE;
+			case id if (id == leftStick.rawUp): LEFT_STICK_DIGITAL_UP;
+			case id if (id == leftStick.rawDown): LEFT_STICK_DIGITAL_DOWN;
+			case id if (id == leftStick.rawLeft): LEFT_STICK_DIGITAL_LEFT;
+			case id if (id == leftStick.rawRight): LEFT_STICK_DIGITAL_RIGHT;
+			case id if (id == rightStick.rawUp): RIGHT_STICK_DIGITAL_UP;
+			case id if (id == rightStick.rawDown): RIGHT_STICK_DIGITAL_DOWN;
+			case id if (id == rightStick.rawLeft): RIGHT_STICK_DIGITAL_LEFT;
+			case id if (id == rightStick.rawRight): RIGHT_STICK_DIGITAL_RIGHT;
+			case _: NONE;
 		}
 	}
-	
-	override public function getRawID(ID:FlxGamepadInputID):Int 
+
+	override public function getRawID(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -62,18 +69,27 @@ class OUYAMapping extends FlxGamepadMapping
 			case DPAD_RIGHT: OUYAID.DPAD_RIGHT;
 			case LEFT_TRIGGER: OUYAID.LEFT_TRIGGER;
 			case RIGHT_TRIGGER: OUYAID.RIGHT_TRIGGER;
+			case LEFT_STICK_DIGITAL_UP: OUYAID.LEFT_ANALOG_STICK.rawUp;
+			case LEFT_STICK_DIGITAL_DOWN: OUYAID.LEFT_ANALOG_STICK.rawDown;
+			case LEFT_STICK_DIGITAL_LEFT: OUYAID.LEFT_ANALOG_STICK.rawLeft;
+			case LEFT_STICK_DIGITAL_RIGHT: OUYAID.LEFT_ANALOG_STICK.rawRight;
+			case RIGHT_STICK_DIGITAL_UP: OUYAID.RIGHT_ANALOG_STICK.rawUp;
+			case RIGHT_STICK_DIGITAL_DOWN: OUYAID.RIGHT_ANALOG_STICK.rawDown;
+			case RIGHT_STICK_DIGITAL_LEFT: OUYAID.RIGHT_ANALOG_STICK.rawLeft;
+			case RIGHT_STICK_DIGITAL_RIGHT: OUYAID.RIGHT_ANALOG_STICK.rawRight;
 			default: -1;
 		}
 	}
-	
+
 	#if FLX_JOYSTICK_API
-	override public function axisIndexToRawID(axisID:Int):Int 
+	override public function axisIndexToRawID(axisID:Int):Int
 	{
-		return if (axisID == leftStick.x) LEFT_ANALOG_STICK_FAKE_X;
-			else if (axisID == leftStick.y) LEFT_ANALOG_STICK_FAKE_Y;
-			else if (axisID == rightStick.x) RIGHT_ANALOG_STICK_FAKE_X;
-			else if (axisID == rightStick.y) RIGHT_ANALOG_STICK_FAKE_Y;
-			else axisID;
+		return if (axisID == leftStick.x) LEFT_ANALOG_STICK_FAKE_X; else if (axisID == leftStick.y) LEFT_ANALOG_STICK_FAKE_Y; else if (axisID == rightStick.x)
+			RIGHT_ANALOG_STICK_FAKE_X;
+		else if (axisID == rightStick.y)
+			RIGHT_ANALOG_STICK_FAKE_Y;
+		else
+			axisID;
 	}
 	#end
 }

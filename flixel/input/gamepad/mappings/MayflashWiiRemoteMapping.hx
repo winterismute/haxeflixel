@@ -3,27 +3,26 @@ package flixel.input.gamepad.mappings;
 import flixel.input.gamepad.FlxGamepad.FlxGamepadAttachment;
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.gamepad.id.MayflashWiiRemoteID;
-import flixel.input.gamepad.mappings.FlxGamepadMapping;
 
 class MayflashWiiRemoteMapping extends FlxGamepadMapping
 {
 	#if FLX_JOYSTICK_API
-	private static inline var REMOTE_DPAD_X:Int = 16;
-	private static inline var REMOTE_DPAD_Y:Int = 17;
+	static inline var REMOTE_DPAD_X:Int = 16;
+	static inline var REMOTE_DPAD_Y:Int = 17;
 
-	private static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 18;
-	private static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 19;
-	private static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 20;
-	private static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 21;
+	static inline var LEFT_ANALOG_STICK_FAKE_X:Int = 18;
+	static inline var LEFT_ANALOG_STICK_FAKE_Y:Int = 19;
+	static inline var RIGHT_ANALOG_STICK_FAKE_X:Int = 20;
+	static inline var RIGHT_ANALOG_STICK_FAKE_Y:Int = 21;
 	#end
-	
-	override function initValues():Void 
+
+	override function initValues():Void
 	{
-		//But you'll only get non-zero values for it when the Nunchuk is attached
+		// but you'll only get non-zero values for it when the Nunchuk is attached
 		supportsPointer = true;
 	}
-	
-	override public function getID(rawID:Int):FlxGamepadInputID 
+
+	override public function getID(rawID:Int):FlxGamepadInputID
 	{
 		return switch (attachment)
 		{
@@ -32,8 +31,8 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case NONE: getIDDefault(rawID);
 		}
 	}
-	
-	private function getIDClassicController(rawID:Int):FlxGamepadInputID
+
+	function getIDClassicController(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -52,11 +51,19 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case MayflashWiiRemoteID.CLASSIC_DPAD_DOWN: DPAD_DOWN;
 			case MayflashWiiRemoteID.CLASSIC_DPAD_LEFT: DPAD_LEFT;
 			case MayflashWiiRemoteID.CLASSIC_DPAD_RIGHT: DPAD_RIGHT;
-			default: NONE;
+			case id if (id == leftStick.rawUp): LEFT_STICK_DIGITAL_UP;
+			case id if (id == leftStick.rawDown): LEFT_STICK_DIGITAL_DOWN;
+			case id if (id == leftStick.rawLeft): LEFT_STICK_DIGITAL_LEFT;
+			case id if (id == leftStick.rawRight): LEFT_STICK_DIGITAL_RIGHT;
+			case id if (id == rightStick.rawUp): RIGHT_STICK_DIGITAL_UP;
+			case id if (id == rightStick.rawDown): RIGHT_STICK_DIGITAL_DOWN;
+			case id if (id == rightStick.rawLeft): RIGHT_STICK_DIGITAL_LEFT;
+			case id if (id == rightStick.rawRight): RIGHT_STICK_DIGITAL_RIGHT;
+			case _: NONE;
 		}
 	}
-	
-	private function getIDNunchuk(rawID:Int):FlxGamepadInputID
+
+	function getIDNunchuk(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -73,11 +80,16 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case MayflashWiiRemoteID.NUNCHUK_DPAD_DOWN: DPAD_DOWN;
 			case MayflashWiiRemoteID.NUNCHUK_DPAD_LEFT: DPAD_LEFT;
 			case MayflashWiiRemoteID.NUNCHUK_DPAD_RIGHT: DPAD_RIGHT;
-			default: NONE;
+			default:
+				if (rawID == MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawUp) LEFT_STICK_DIGITAL_UP;
+				if (rawID == MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawDown) LEFT_STICK_DIGITAL_DOWN;
+				if (rawID == MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawLeft) LEFT_STICK_DIGITAL_LEFT;
+				if (rawID == MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawRight) LEFT_STICK_DIGITAL_RIGHT;
+				NONE;
 		}
 	}
-	
-	private function getIDDefault(rawID:Int):FlxGamepadInputID
+
+	function getIDDefault(rawID:Int):FlxGamepadInputID
 	{
 		return switch (rawID)
 		{
@@ -95,8 +107,8 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			default: NONE;
 		}
 	}
-	
-	override public function getRawID(ID:FlxGamepadInputID):Int 
+
+	override public function getRawID(ID:FlxGamepadInputID):Int
 	{
 		return switch (attachment)
 		{
@@ -105,8 +117,8 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case NONE: getRawDefault(ID);
 		}
 	}
-	
-	private function getRawClassicController(ID:FlxGamepadInputID):Int
+
+	function getRawClassicController(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -127,11 +139,19 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case RIGHT_TRIGGER: MayflashWiiRemoteID.CLASSIC_R;
 			case EXTRA_0: MayflashWiiRemoteID.CLASSIC_ONE;
 			case EXTRA_1: MayflashWiiRemoteID.CLASSIC_TWO;
+			case LEFT_STICK_DIGITAL_UP: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawUp;
+			case LEFT_STICK_DIGITAL_DOWN: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawDown;
+			case LEFT_STICK_DIGITAL_LEFT: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawLeft;
+			case LEFT_STICK_DIGITAL_RIGHT: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawRight;
+			case RIGHT_STICK_DIGITAL_UP: MayflashWiiRemoteID.RIGHT_ANALOG_STICK.rawUp;
+			case RIGHT_STICK_DIGITAL_DOWN: MayflashWiiRemoteID.RIGHT_ANALOG_STICK.rawDown;
+			case RIGHT_STICK_DIGITAL_LEFT: MayflashWiiRemoteID.RIGHT_ANALOG_STICK.rawLeft;
+			case RIGHT_STICK_DIGITAL_RIGHT: MayflashWiiRemoteID.RIGHT_ANALOG_STICK.rawRight;
 			default: getRawDefault(ID);
 		}
 	}
-	
-	private function getRawNunchuk(ID:FlxGamepadInputID):Int
+
+	function getRawNunchuk(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -150,11 +170,15 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			case DPAD_RIGHT: MayflashWiiRemoteID.NUNCHUK_DPAD_RIGHT;
 			case POINTER_X: MayflashWiiRemoteID.NUNCHUK_POINTER_X;
 			case POINTER_Y: MayflashWiiRemoteID.NUNCHUK_POINTER_Y;
+			case LEFT_STICK_DIGITAL_UP: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawUp;
+			case LEFT_STICK_DIGITAL_DOWN: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawDown;
+			case LEFT_STICK_DIGITAL_LEFT: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawLeft;
+			case LEFT_STICK_DIGITAL_RIGHT: MayflashWiiRemoteID.LEFT_ANALOG_STICK.rawRight;
 			default: -1;
 		}
 	}
-	
-	private function getRawDefault(ID:FlxGamepadInputID):Int
+
+	function getRawDefault(ID:FlxGamepadInputID):Int
 	{
 		return switch (ID)
 		{
@@ -172,9 +196,9 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			default: -1;
 		}
 	}
-	
+
 	#if FLX_JOYSTICK_API
-	override public function axisIndexToRawID(axisID:Int):Int 
+	override public function axisIndexToRawID(axisID:Int):Int
 	{
 		if (attachment == WII_NUNCHUCK || attachment == WII_CLASSIC_CONTROLLER)
 		{
@@ -190,16 +214,16 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 			else if (axisID == rightStick.y)
 				return REMOTE_DPAD_Y;
 		}
-		
+
 		if (axisID == leftStick.x)
 			return RIGHT_ANALOG_STICK_FAKE_X;
 		else if (axisID == rightStick.y)
 			return RIGHT_ANALOG_STICK_FAKE_Y;
-		
+
 		return axisID;
 	}
-	
-	override public function checkForFakeAxis(ID:FlxGamepadInputID):Int 
+
+	override public function checkForFakeAxis(ID:FlxGamepadInputID):Int
 	{
 		if (attachment == WII_NUNCHUCK)
 		{
@@ -216,21 +240,21 @@ class MayflashWiiRemoteMapping extends FlxGamepadMapping
 		return -1;
 	}
 	#end
-	
-	override function set_attachment(attachment:FlxGamepadAttachment):FlxGamepadAttachment 
+
+	override function set_attachment(attachment:FlxGamepadAttachment):FlxGamepadAttachment
 	{
 		leftStick = switch (attachment)
 		{
 			case WII_NUNCHUCK, WII_CLASSIC_CONTROLLER: MayflashWiiRemoteID.LEFT_ANALOG_STICK;
 			case NONE: MayflashWiiRemoteID.REMOTE_DPAD;
 		}
-		
+
 		rightStick = switch (attachment)
 		{
 			case WII_CLASSIC_CONTROLLER: MayflashWiiRemoteID.RIGHT_ANALOG_STICK;
 			default: null;
 		}
-		
+
 		return super.set_attachment(attachment);
 	}
 }
